@@ -1,0 +1,8 @@
+spring:
+  datasource:
+      password: Aa123456
+      url: jdbc:mysql://localhost:3306/vm_authen
+      username: root
+  jpa:
+    hibernate:
+      ddl-auto: update

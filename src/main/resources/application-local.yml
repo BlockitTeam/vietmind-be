@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    password: sueyvh@83!8xz
+    url: jdbc:mysql://localhost:3307/vm_db
+    username: vm_admin
+  jpa:
+    hibernate:
+      ddl-auto: update
