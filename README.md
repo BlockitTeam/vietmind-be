@@ -23,6 +23,3 @@ BODY
 {"token":"abcxyz", "provider":"facebook"}
 
 {"token":"abcxyz", "provider":"google"}
-
-
-# Swagger - Open AI
