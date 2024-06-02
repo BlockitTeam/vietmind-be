@@ -63,6 +63,7 @@ INSERT INTO options (question_id, option_text, score, created_at, updated_at) VA
 (7, 'Không đúng với tôi', 0, NOW(), NOW()),
 (7, 'Đúng với tôi một phần', 1, NOW(), NOW()),
 (7, 'Thỉnh thoảng đúng', 1, NOW(), NOW()),
-(7, 'Đúng với tôi', 2, NOW(), NOW());
+(7, 'Đúng với tôi', 2, NOW(), NOW()),
+(7, 'Luôn luôn đúng', 2, NOW(), NOW());
 
 
