@@ -8,6 +8,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.vm.constant.Provider;
 import com.vm.model.AuthResponse;
+import com.vm.util.TokenStore;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class GoogleTokenVerifier {
         }
     }
 
-    public AuthResponse authenticate(String userToken) throws Exception {
+    public AuthResponse authenticate(String userToken, TokenStore tokenStore) throws Exception {
         try {
             GoogleIdToken.Payload payload = verify(userToken);
 
@@ -91,6 +92,7 @@ public class GoogleTokenVerifier {
                     "google"
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            tokenStore.markTokenAsUsed(userToken);
             return new AuthResponse("Authentication successful");
         } catch (Exception exception) {
             log.error("Failed to authenticate", exception.getMessage());

@@ -2,6 +2,7 @@ package com.vm.service;
 
 import com.vm.constant.Provider;
 import com.vm.model.AuthResponse;
+import com.vm.util.TokenStore;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,7 @@ public class FacebookAuthService {
         }
     }
 
-    public AuthResponse authenticate(String userToken) throws Exception {
+    public AuthResponse authenticate(String userToken, TokenStore tokenStore) throws Exception {
         try {
             JSONObject objectResult = verifyToken(userToken);
             String email = objectResult.getString("email");
@@ -100,7 +101,7 @@ public class FacebookAuthService {
 
             Authentication authentication = new OAuth2AuthenticationToken(oAuth2User, oAuth2User.getAuthorities(), "facebook");
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
+            tokenStore.markTokenAsUsed(userToken);
             return new AuthResponse("Authentication successful");
         } catch (Exception exception) {
             log.error("Failed to authenticate", exception.getMessage());
