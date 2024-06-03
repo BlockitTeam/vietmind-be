@@ -1,7 +1,7 @@
--- Change log: V6
+-- Change log: V3
 -- Description: Create "Options" Table
 
-CREATE TABLE options (
+CREATE TABLE IF NOT EXISTS options (
     options_id INT AUTO_INCREMENT PRIMARY KEY,
     question_id INT,
     option_text TEXT,
