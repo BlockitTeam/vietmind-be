@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    password: Aa123456
+    password: qwe193!1sxz
     url: jdbc:mysql://localhost:3306/vm_authen
-    username: root
+    username: vm_admin
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,9 +17,3 @@ spring:
     servlet:
       session:
         timeout:2h
-
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-  api-docs:
-    path: /v3/api-docs
