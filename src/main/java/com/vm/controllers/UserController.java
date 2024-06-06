@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @PutMapping("")
-    public ResponseEntity<User> updateTask(@RequestBody UserRequest request) throws Exception {
+    public ResponseEntity<User> update(@RequestBody UserRequest request) throws Exception {
         String username = userService.getCurrentUserName();
         User user = userService.update(request, username);
         return new ResponseEntity<>(user, HttpStatus.OK);

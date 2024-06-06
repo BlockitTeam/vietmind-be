@@ -1,5 +1,6 @@
 package com.vm.controllers;
 
+import com.vm.dto.BaseResponse;
 import com.vm.model.AuthResponse;
 import com.vm.model.Response;
 import com.vm.request.QuestionObject;
@@ -50,6 +51,7 @@ public class ResponseController {
     public ResponseEntity<?> getResult() {
         Map<String, String> result = service.getResult();
         return ResponseEntity.ok(result);
+//        return ResponseEntity.ok().body(BaseResponse.success(result, "Get result successfully", HttpStatus.OK.value()));
     }
 
     @DeleteMapping("")
