@@ -29,7 +29,7 @@ public class QuestionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<QuestionObject> getTask(@PathVariable Long id) throws Exception {
+    public ResponseEntity<QuestionObject> getQuestionById(@PathVariable Long id) throws Exception {
         QuestionObject questions = service.getQuestionById(id);
         return ResponseEntity.ok(questions);
     }

@@ -17,4 +17,5 @@ public class QuestionObject {
     private String questionText;
     private Integer questionTypeId;
     private List<Option> options;
+    private Object answer;
 }

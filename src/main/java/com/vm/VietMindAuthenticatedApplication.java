@@ -29,6 +29,9 @@ public class VietMindAuthenticatedApplication extends SpringBootServletInitializ
 		}
 		String serverPort = env.getProperty("server.port");
 		String contextPath = env.getProperty("server.servlet.context-path");
+		String swaggerPath = env.getProperty("springdoc.swagger-ui.path");
+
+
 		if (TextUtils.isEmpty(contextPath)) {
 			contextPath = "/";
 		}
@@ -46,7 +49,7 @@ public class VietMindAuthenticatedApplication extends SpringBootServletInitializ
 				env.getProperty("spring.application.name"),
 				protocol,
 				serverPort,
-				contextPath,
+				swaggerPath,
 				protocol,
 				hostAddress,
 				serverPort,
