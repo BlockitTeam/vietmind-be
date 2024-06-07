@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    password: qwe193!1sxz
+    password: Aa123456
     url: jdbc:mysql://localhost:3306/vm_authen
-    username: vm_admin
+    username: root
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,7 +13,3 @@ spring:
     enabled: true
     locations: classpath:migration
     baseline-on-migrate: false
-  server:
-    servlet:
-      session:
-        timeout:2h
