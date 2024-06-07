@@ -1,9 +1,11 @@
 package com.vm.repo;
 
 import com.vm.model.Response;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +24,8 @@ public interface ResponseRepository extends CrudRepository<Response, Long> {
 			nativeQuery = true)
 	List<Map<String, Object>> getAggregatedResponses();
 
-	@Query("delete from Response a where a.surveyId = :survey_id")
+	@Modifying
+	@Transactional
+	@Query("Delete from Response a where a.surveyId = :survey_id")
 	void deleteAllByEmployeeIdIn(@Param("survey_id") Long survey_id);
 }

@@ -33,28 +33,4 @@ public class QuestionController {
         QuestionObject questions = service.getQuestionById(id);
         return ResponseEntity.ok(questions);
     }
-
-//    @PostMapping("")
-//    public ResponseEntity<Task> createTask(@RequestBody TaskRequest request) {
-//        Task task = taskService.addTask(request);
-//        return new ResponseEntity<>(task, HttpStatus.CREATED);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<?> deleteTask(@PathVariable Long id) throws Exception {
-//        taskService.deleteTask(id);
-//        return ResponseEntity.ok().body(BaseResponse.success(null, "Delete successfully", HttpStatus.OK.value()));
-//    }
-//
-//    @PutMapping("")
-//    public ResponseEntity<Task> updateTask(@RequestBody TaskRequest request) throws Exception {
-//        Task Task = taskService.updateTask(request);
-//        return new ResponseEntity<>(Task, HttpStatus.OK);
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Task> getTask(@PathVariable Long id) throws Exception {
-//        Task task =  taskService.findTaskById(id);
-//        return new ResponseEntity<>(task, HttpStatus.OK);
-//    }
 }

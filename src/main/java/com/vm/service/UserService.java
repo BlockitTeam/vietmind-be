@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-
 	@Autowired
 	private UserRepository repo;
 
@@ -23,11 +22,8 @@ public class UserService {
 		if (existUser == null) {
 			User newUser = new User();
 			newUser.setUsername(username);
-			newUser.setProvider(Provider.GOOGLE);
-			newUser.setEnabled(true);			
-			
+			newUser.setProvider(provider);
 			repo.save(newUser);
-			
 			System.out.println("Created new user: " + username);
 		}
 	}
@@ -43,6 +39,9 @@ public class UserService {
 		originUser.setLastName(request.getLastName());
 		originUser.setBirthYear(request.getBirthYear());
 		originUser.setGender(request.getGender());
+
+		//Enable user after finish complete form register
+		originUser.setEnabled(true);
 		return repo.save(originUser);
 	}
 
@@ -68,5 +67,12 @@ public class UserService {
 	public Long getCurrentUserId() {
 		String userName = getCurrentUserName();
 		return repo.getUserIdByUsername(userName);
+	}
+
+	public void markCompleteGeneralSurvey(boolean surveyCompleted) {
+		Long currentUserId = getCurrentUserId();
+		User user = repo.findById(currentUserId).get();
+		user.setSurveyCompleted(surveyCompleted);
+		repo.save(user);
 	}
 }

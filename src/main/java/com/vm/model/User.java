@@ -17,7 +17,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
-
 	@Id
 	@Column(name = "user_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +24,9 @@ public class User {
 
 	private String username;
 	private String password;
-	private boolean enabled;
+	private boolean enabled = false;
+
+	private boolean surveyCompleted = false;
 	
 	@Enumerated(EnumType.STRING)
 	private Provider provider;
