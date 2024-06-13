@@ -8,6 +8,8 @@ import com.vm.service.MessageService;
 import com.vm.service.UserService;
 import com.vm.service.impl.MessageServiceImpl;
 import com.vm.service.impl.UserDetailsServiceImpl;
+import com.vm.util.EncryptionUtil;
+import com.vm.util.KeyManagement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import javax.crypto.SecretKey;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -47,23 +50,30 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         WebSocketSession targetSession = sessions.get(targetUserId);
         if (targetSession != null && targetSession.isOpen()) {
-            ObjectNode response = objectMapper.createObjectNode();
-            response.put("fromUserId", userId);
-            response.put("message", msg);
-            targetSession.sendMessage(new TextMessage(response.toString()));
             logger.info("Message from {} to {}: {}", userId, targetUserId, msg);
 
             //Stored message
             Message request = new Message();
             request.setSenderId(Integer.valueOf(userId));
             request.setReceiverId(Integer.valueOf(targetUserId));
-            request.setEncryptedMessage(msg);
 
+            //Encrypt message
+            SecretKey key = KeyManagement.loadKey();
+            String encryptedMessage = EncryptionUtil.encrypt(msg, key);
+            request.setEncryptedMessage(encryptedMessage);
             //temp
             request.setConversationId(0);
             request.setIsRead(true);
 
             messageService.saveMessage(request);
+
+            //targetUserId resend
+            String decryptedMessage = EncryptionUtil.decrypt(encryptedMessage, key);
+            ObjectNode response = objectMapper.createObjectNode();
+            response.put("fromUserId", userId);
+            response.put("message", decryptedMessage);
+
+            targetSession.sendMessage(new TextMessage(response.toString()));
         } else {
             logger.info("Target user {} is not connected.", targetUserId);
         }
