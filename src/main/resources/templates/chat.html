@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
+</head>
+<body>
+<input type="text" id="userId" placeholder="Your User ID">
+<input type="text" id="targetUserId" placeholder="Target User ID">
+<input type="text" id="jsessionid" placeholder="JSESSIONID">
+<input type="text" id="message" placeholder="Message" oninput="sendTypingNotification()">
+<button onclick="connect()">Connect</button>
+<button onclick="sendMessage()">Send Message</button>
+<div id="log"></div>
+
+<script>
+    let ws;
+
+    function connect() {
+        const userId = document.getElementById('userId').value;
+        const jsessionid = document.getElementById('jsessionid').value;
+        ws = new WebSocket('ws://localhost:9001/ws?userId=' + userId);
+
+        ws.onopen = function () {
+            log('Connected as ' + userId);
+            // Set the cookie once the connection is open
+            document.cookie = 'JSESSIONID=' + jsessionid;
+        };
+
+        ws.onmessage = function (event) {
+            log('Received: ' + event.data);
+        };
+
+        ws.onclose = function () {
+            log('Disconnected');
+        };
+
+        ws.onerror = function (error) {
+            log('Error: ' + error);
+        };
+    }
+
+    function sendMessage() {
+        const targetUserId = document.getElementById('targetUserId').value;
+        const message = document.getElementById('message').value;
+        const msg = JSON.stringify({
+            type: 'message',
+            targetUserId: targetUserId,
+            message: message
+        });
+        ws.send(msg);
+        log('Sent: ' + message);
+    }
+
+    function sendTypingNotification() {
+        const targetUserId = document.getElementById('targetUserId').value;
+        const msg = JSON.stringify({
+            type: 'typing',
+            targetUserId: targetUserId
+        });
+        ws.send(msg);
+    }
+
+    function log(message) {
+        const logDiv = document.getElementById('log');
+        logDiv.innerHTML += '<p>' + message + '</p>';
+    }
+</script>
+</body>
+</html>

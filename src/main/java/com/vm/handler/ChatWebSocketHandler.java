@@ -5,16 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vm.model.Message;
 import com.vm.service.MessageService;
-import com.vm.service.UserService;
-import com.vm.service.impl.MessageServiceImpl;
-import com.vm.service.impl.UserDetailsServiceImpl;
 import com.vm.util.EncryptionUtil;
 import com.vm.util.KeyManagement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -45,37 +40,54 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String userId = getUserId(session);
         JsonNode jsonMessage = objectMapper.readTree(message.getPayload());
+
+        // Parse the payload (you can use a library like Jackson to parse JSON)
+        // For simplicity, let's assume the payload is a JSON string like:
+        // {"type":"message", "targetUserId":"user2", "message":"Hello"}
+        // or
+        // {"type":"typing", "targetUserId":"user2"}
+
+        String type = jsonMessage.get("type").asText();
         String targetUserId = jsonMessage.get("targetUserId").asText();
         String msg = jsonMessage.get("message").asText();
 
-        WebSocketSession targetSession = sessions.get(targetUserId);
-        if (targetSession != null && targetSession.isOpen()) {
-            logger.info("Message from {} to {}: {}", userId, targetUserId, msg);
+        if ("message".equals(type)) {
+            WebSocketSession targetSession = sessions.get(targetUserId);
+            if (targetSession != null && targetSession.isOpen()) {
+                logger.info("Message from {} to {}: {}", userId, targetUserId, msg);
 
-            //Stored message
-            Message request = new Message();
-            request.setSenderId(Integer.valueOf(userId));
-            request.setReceiverId(Integer.valueOf(targetUserId));
+                //Stored message
+                Message request = new Message();
+                request.setSenderId(Integer.valueOf(userId));
+                request.setReceiverId(Integer.valueOf(targetUserId));
 
-            //Encrypt message
-            SecretKey key = KeyManagement.loadKey();
-            String encryptedMessage = EncryptionUtil.encrypt(msg, key);
-            request.setEncryptedMessage(encryptedMessage);
-            //temp
-            request.setConversationId(0);
-            request.setIsRead(true);
+                //Encrypt message
+                SecretKey key = KeyManagement.loadKey();
+                String encryptedMessage = EncryptionUtil.encrypt(msg, key);
+                request.setEncryptedMessage(encryptedMessage);
+                //temp
+                request.setConversationId(0);
+                request.setIsRead(true);
 
-            messageService.saveMessage(request);
+                messageService.saveMessage(request);
 
-            //targetUserId resend
-            String decryptedMessage = EncryptionUtil.decrypt(encryptedMessage, key);
-            ObjectNode response = objectMapper.createObjectNode();
-            response.put("fromUserId", userId);
-            response.put("message", decryptedMessage);
+                //targetUserId resend
+                String decryptedMessage = EncryptionUtil.decrypt(encryptedMessage, key);
+                ObjectNode response = objectMapper.createObjectNode();
+                response.put("fromUserId", userId);
+                response.put("message", decryptedMessage);
+                response.put("type", type);
 
-            targetSession.sendMessage(new TextMessage(response.toString()));
-        } else {
-            logger.info("Target user {} is not connected.", targetUserId);
+                targetSession.sendMessage(new TextMessage(response.toString()));
+            } else {
+                logger.info("Target user {} is not connected.", targetUserId);
+            }
+        } else if ("typing".equals(type)) {
+            // Handle typing notification
+            WebSocketSession targetSession = sessions.get(targetUserId);
+            if (targetSession != null) {
+                targetSession.sendMessage(new TextMessage("{\"type\":\"typing\", \"fromUserId\":\"" + userId + "\"}"));
+            }
         }
     }
 
