@@ -49,9 +49,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         String type = jsonMessage.get("type").asText();
         String targetUserId = jsonMessage.get("targetUserId").asText();
-        String msg = jsonMessage.get("message").asText();
 
         if ("message".equals(type)) {
+            String msg = jsonMessage.get("message").asText();
             WebSocketSession targetSession = sessions.get(targetUserId);
             if (targetSession != null && targetSession.isOpen()) {
                 logger.info("Message from {} to {}: {}", userId, targetUserId, msg);
