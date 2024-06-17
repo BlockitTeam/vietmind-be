@@ -44,6 +44,9 @@ public class User {
 	@Column(name = "gender")
 	private Gender gender;
 
+	@Column(name = "public_key", columnDefinition = "TEXT", nullable = false)
+	private String publicKey;
+
 	@Getter
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(

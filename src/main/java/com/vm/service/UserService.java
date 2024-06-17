@@ -12,17 +12,35 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.security.*;
+import java.util.Base64;
+
 @Service
 public class UserService {
 	@Autowired
 	private UserRepository repo;
 
-	public void processOAuthPostLogin(String username, Provider provider) {
+	public void processOAuthPostLogin(String username, Provider provider) throws NoSuchAlgorithmException {
 		User existUser = repo.getUserByUsername(username);
 		if (existUser == null) {
 			User newUser = new User();
 			newUser.setUsername(username);
 			newUser.setProvider(provider);
+
+			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+			keyPairGenerator.initialize(2048);
+			KeyPair keyPair = keyPairGenerator.generateKeyPair();
+			PublicKey publicKey = keyPair.getPublic();
+			PrivateKey privateKey = keyPair.getPrivate();
+
+			// Convert public key to string to store in database
+			String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+			// Save publicKeyString to database
+
+			// Store privateKey securely on device
+			String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
+
+			newUser.setPublicKey(publicKeyString);
 			repo.save(newUser);
 			System.out.println("Created new user: " + username);
 		}

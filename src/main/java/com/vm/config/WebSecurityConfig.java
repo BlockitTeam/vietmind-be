@@ -22,6 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 @Configuration
 @EnableWebSecurity
@@ -81,7 +82,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         System.out.println("AuthenticationSuccessHandler invoked");
                         System.out.println("Authentication name: " + authentication.getName());
                         CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
-                        userService.processOAuthPostLogin(oauthUser.getEmail(), Provider.LOCAL);
+                        try {
+                            userService.processOAuthPostLogin(oauthUser.getEmail(), Provider.LOCAL);
+                        } catch (NoSuchAlgorithmException e) {
+                            throw new RuntimeException(e);
+                        }
                         response.sendRedirect("/api/v1/user/current-user");
                     }
                 })
