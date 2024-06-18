@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vm.model.Message;
 import com.vm.service.MessageService;
+import com.vm.service.UserService;
 import com.vm.util.EncryptionUtil;
 import com.vm.util.KeyManagement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -29,8 +32,15 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String uuid = String.valueOf(userService.getCurrentUserId());
+
         String userId = getUserId(session);
         sessions.put(userId, session);
         logger.info("User {} connected. Session ID: {}", userId, session.getId());
