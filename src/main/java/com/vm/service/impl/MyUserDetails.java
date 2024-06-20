@@ -61,4 +61,7 @@ public class MyUserDetails implements UserDetails {
 		return user.isEnabled();
 	}
 
+	public String getUserId() {
+		return String.valueOf(user.getId());
+	}
 }

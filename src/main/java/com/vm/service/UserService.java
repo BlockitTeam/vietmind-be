@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.*;
 import java.util.Base64;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -82,15 +83,19 @@ public class UserService {
 		return username;
 	}
 
-	public Long getCurrentUserId() {
+	public UUID getCurrentUserId() {
 		String userName = getCurrentUserName();
 		return repo.getUserIdByUsername(userName);
 	}
 
 	public void markCompleteGeneralSurvey(boolean surveyCompleted) {
-		Long currentUserId = getCurrentUserId();
+		UUID currentUserId = getCurrentUserId();
 		User user = repo.findById(currentUserId).get();
 		user.setSurveyCompleted(surveyCompleted);
 		repo.save(user);
+	}
+
+	public UUID getUserIdByUserName(String username) {
+		return repo.getUserIdByUsername(username);
 	}
 }

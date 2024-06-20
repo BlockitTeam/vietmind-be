@@ -67,7 +67,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginPage("/login")
                 .usernameParameter("email")
                 .passwordParameter("pass")
-                .defaultSuccessUrl("/list")
+                .defaultSuccessUrl("/api/v1/user/current-user")
                 .and()
                 .oauth2Login()
                 .loginPage("/login")
