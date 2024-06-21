@@ -11,6 +11,7 @@ import com.vm.service.UserService;
 import com.vm.service.impl.MyUserDetails;
 import com.vm.util.EncryptionUtil;
 import com.vm.util.KeyManagement;
+import com.vm.util.KeyUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,11 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import java.security.Key;
+import java.security.PublicKey;
+import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -33,6 +38,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(ChatWebSocketHandler.class);
     private final ConcurrentMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final String RSA = "RSA";
+    private static final String AES = "AES";
 
     @Autowired
     private MessageService messageService;
@@ -55,6 +63,49 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         UUID doctorUUID = UUID.fromString(doctorId);
 
         Conversation conversation = conversationService.getConversationByUserIdAndDoctorId(userUUID, doctorUUID);
+        Integer conversationId;
+        if (conversation == null) {
+            conversation = new Conversation();
+            conversation.setUserId(userUUID);
+            conversation.setDoctorId(doctorUUID);
+
+            // Generate AES session key
+            SecretKey sessionKey = KeyManagement.generateAESKey();
+
+            // Encrypt the message with the AES session key
+            //Send code after for FE transfer
+//            Cipher aesCipher = Cipher.getInstance(AES);
+//            aesCipher.init(Cipher.ENCRYPT_MODE, sessionKey);
+//            byte[] encryptedMessageBytes = aesCipher.doFinal(message.getBytes());
+//            String encryptedMessage = Base64.getEncoder().encodeToString(encryptedMessageBytes);
+
+            // Encrypt the AES session key with the recipient's public key
+            Cipher rsaCipher = Cipher.getInstance(RSA);
+
+            String recipientPublicKeyString = userService.getPublicKeyByUserId(doctorId);
+            PublicKey recipientPublicKey = KeyUtils.getPublicKeyFromString(recipientPublicKeyString);
+            rsaCipher.init(Cipher.ENCRYPT_MODE, recipientPublicKey);
+            byte[] encryptedSessionKeyForRecipient = rsaCipher.doFinal(sessionKey.getEncoded());
+            String encryptedSessionKeyRecipient = Base64.getEncoder().encodeToString(encryptedSessionKeyForRecipient);
+
+            // Encrypt the AES session key with the sender's public key
+            String senderPublicKeyString = userService.getPublicKeyByUserId(userId);
+            PublicKey senderPublicKey = KeyUtils.getPublicKeyFromString(senderPublicKeyString);
+            rsaCipher.init(Cipher.ENCRYPT_MODE, senderPublicKey);
+            byte[] encryptedSessionKeyForSender = rsaCipher.doFinal(sessionKey.getEncoded());
+            String encryptedSessionKeySender = Base64.getEncoder().encodeToString(encryptedSessionKeyForSender);
+
+            conversation.setEncryptedSessionKeySender(encryptedSessionKeySender);
+            conversation.setEncryptedSessionKeyRecipient(encryptedSessionKeyRecipient);
+
+            Conversation newConversation = conversationService.saveConversation(conversation);
+            conversationId = newConversation.getConversationId();
+        } else {
+            conversationId = conversation.getConversationId();
+        }
+        ObjectNode response = objectMapper.createObjectNode();
+        response.put("conversationId", conversationId);
+        session.sendMessage(new TextMessage(response.toString()));
     }
 
     private @Nullable String getCurrentUserId(WebSocketSession session) {

@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "conversations")
@@ -23,10 +24,16 @@ public class Conversation {
     private Integer conversationId;
 
     @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    private UUID userId;
 
     @Column(name = "doctor_id", nullable = false)
-    private Integer doctorId;
+    private UUID doctorId;
+
+    @Column(name = "encrypted_session_key_sender", columnDefinition = "TEXT", nullable = false)
+    private String encryptedSessionKeySender;
+
+    @Column(name = "encrypted_session_key_recipient", columnDefinition = "TEXT", nullable = false)
+    private String encryptedSessionKeyRecipient;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.UUID;
 
-public interface ConversationRepository extends CrudRepository<Conversation, Long> {
+public interface ConversationRepository extends CrudRepository<Conversation, Integer> {
     @Query("SELECT u FROM Response u WHERE u.surveyId = :survey_id")
     public List<Conversation> getResponseBySurveyId(@Param("survey_id") Long survey_id);
 

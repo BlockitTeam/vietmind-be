@@ -13,4 +13,7 @@ public interface UserRepository extends CrudRepository<User, UUID> {
 
 	@Query("SELECT u.id FROM User u WHERE u.username = :username")
 	public UUID getUserIdByUsername(@Param("username") String username);
+
+	@Query("SELECT u.publicKey FROM User u WHERE u.id = :userid")
+	public String getPublicKeyByUserid(@Param("userid") UUID userid);
 }

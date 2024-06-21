@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,12 +24,17 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public Conversation saveConversation() {
-        return null;
+    public Conversation saveConversation(Conversation conversation) {
+        return conversationRepo.save(conversation);
     }
 
     @Override
     public Conversation getConversationByUserIdAndDoctorId(UUID userId, UUID doctorId) {
         return conversationRepo.getConversationByUserIdAndDoctorId(userId, doctorId);
+    }
+
+    @Override
+    public Optional<Conversation> getConversationById(Integer id) {
+        return conversationRepo.findById(id);
     }
 }

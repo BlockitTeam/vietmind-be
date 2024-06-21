@@ -102,7 +102,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
                         try {
                             userService.processOAuthPostLogin(oauthUser.getEmail(), Provider.LOCAL);
-                        } catch (NoSuchAlgorithmException e) {
+                        } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                         response.sendRedirect("/api/v1/user/current-user");

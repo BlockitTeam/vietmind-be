@@ -5,6 +5,8 @@ import com.vm.repo.UserRepository;
 import com.vm.model.User;
 import com.vm.request.UserRequest;
 import com.vm.service.impl.CustomOAuth2User;
+import com.vm.util.EncryptionUtil;
+import com.vm.util.KeyManagement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.security.*;
 import java.util.Base64;
 import java.util.UUID;
@@ -21,7 +24,7 @@ public class UserService {
 	@Autowired
 	private UserRepository repo;
 
-	public void processOAuthPostLogin(String username, Provider provider) throws NoSuchAlgorithmException {
+	public void processOAuthPostLogin(String username, Provider provider) throws Exception {
 		User existUser = repo.getUserByUsername(username);
 		if (existUser == null) {
 			User newUser = new User();
@@ -40,8 +43,12 @@ public class UserService {
 
 			// Store privateKey securely on device
 			String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
+			SecretKey key = KeyManagement.loadKey();
+			String encryptedPrivateKey = EncryptionUtil.encrypt(privateKeyString, key);
 
 			newUser.setPublicKey(publicKeyString);
+			newUser.setEncryptedPrivateKey(encryptedPrivateKey);
+
 			repo.save(newUser);
 			System.out.println("Created new user: " + username);
 		}
@@ -97,5 +104,9 @@ public class UserService {
 
 	public UUID getUserIdByUserName(String username) {
 		return repo.getUserIdByUsername(username);
+	}
+
+	public String getPublicKeyByUserId (String user_id) {
+		return repo.getPublicKeyByUserid(UUID.fromString(user_id));
 	}
 }

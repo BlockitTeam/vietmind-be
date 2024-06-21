@@ -1,6 +1,7 @@
 package com.vm.controllers;
 
 import com.vm.model.User;
+import com.vm.request.QuestionObject;
 import com.vm.request.UserRequest;
 import com.vm.service.UserService;
 import com.vm.util.EncryptionUtil;
@@ -134,5 +135,10 @@ public class UserController {
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedMessage));
         return new String(decryptedBytes);
+    }
+
+    @GetMapping("/get-public-key/{user_id}")
+    public ResponseEntity<?> getPublicKey(@PathVariable String user_id) {
+        return new ResponseEntity<>(userService.getPublicKeyByUserId(user_id), HttpStatus.OK);
     }
 }
