@@ -3,22 +3,20 @@ package com.vm.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vm.model.Conversation;
 import com.vm.model.Message;
+import com.vm.service.ConversationService;
 import com.vm.service.MessageService;
 import com.vm.service.UserService;
-import com.vm.service.impl.CustomOAuth2User;
 import com.vm.service.impl.MyUserDetails;
 import com.vm.util.EncryptionUtil;
 import com.vm.util.KeyManagement;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -26,6 +24,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.crypto.SecretKey;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -41,8 +40,24 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ConversationService conversationService;
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        String userId = getCurrentUserId(session);
+        sessions.put(userId, session);
+        logger.info("User {} connected. Session ID: {}", userId, session.getId());
+
+        //Logic save conversation here
+        String doctorId = getTargetUserId(session);
+        UUID userUUID = UUID.fromString(userId);
+        UUID doctorUUID = UUID.fromString(doctorId);
+
+        Conversation conversation = conversationService.getConversationByUserIdAndDoctorId(userUUID, doctorUUID);
+    }
+
+    private @Nullable String getCurrentUserId(WebSocketSession session) {
         Object principal = session.getPrincipal();
         String userId = null;
         if (principal instanceof UsernamePasswordAuthenticationToken) {
@@ -51,13 +66,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             String username = ((OAuth2AuthenticationToken) principal).getPrincipal().getAttributes().get("email").toString();
             userId = String.valueOf(userService.getUserIdByUserName(username));
         }
-        sessions.put(userId, session);
-        logger.info("User {} connected. Session ID: {}", userId, session.getId());
+        return userId;
     }
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String userId = getUserId(session);
+        String userId = getCurrentUserId(session);
+        String targetUserId = getTargetUserId(session);
         JsonNode jsonMessage = objectMapper.readTree(message.getPayload());
 
         // Parse the payload (you can use a library like Jackson to parse JSON)
@@ -67,8 +82,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // {"type":"typing", "targetUserId":"user2"}
 
         String type = jsonMessage.get("type").asText();
-        String targetUserId = jsonMessage.get("targetUserId").asText();
-
         if ("message".equals(type)) {
             String msg = jsonMessage.get("message").asText();
             WebSocketSession targetSession = sessions.get(targetUserId);
@@ -112,13 +125,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        String userId = getUserId(session);
+        String userId = getCurrentUserId(session);
         sessions.remove(userId);
         logger.info("User {} disconnected. Session ID: {}", userId, session.getId());
     }
 
-    private String getUserId(WebSocketSession session) {
-        // Assume userId is passed as a query parameter, e.g., ws://localhost:9001/ws?userId=123
+    private String getTargetUserId(WebSocketSession session) {
+        // Assume userId is passed as a query parameter, e.g., ws://localhost:9001/ws?targetUserId=123
         String userId = session.getUri().getQuery().split("=")[1];
         return userId;
     }

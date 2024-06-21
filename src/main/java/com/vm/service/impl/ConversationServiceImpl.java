@@ -7,9 +7,12 @@ import com.vm.repo.MessageRepository;
 import com.vm.service.ConversationService;
 import com.vm.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
+@Service
 public class ConversationServiceImpl implements ConversationService {
     @Autowired
     private ConversationRepository conversationRepo;
@@ -22,5 +25,10 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public Conversation saveConversation() {
         return null;
+    }
+
+    @Override
+    public Conversation getConversationByUserIdAndDoctorId(UUID userId, UUID doctorId) {
+        return conversationRepo.getConversationByUserIdAndDoctorId(userId, doctorId);
     }
 }

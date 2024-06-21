@@ -1,6 +1,8 @@
 package com.vm.config;
 
 import com.vm.constant.Provider;
+import com.vm.handler.CustomAuthenticationSuccessHandler;
+import com.vm.model.AuthResponse;
 import com.vm.service.CustomOAuth2UserService;
 import com.vm.service.UserService;
 import com.vm.service.impl.CustomOAuth2User;
@@ -8,6 +10,7 @@ import com.vm.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,6 +54,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return authProvider;
     }
 
+    @Bean
+    public AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
+        return new CustomAuthenticationSuccessHandler();
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider());
@@ -67,7 +75,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginPage("/login")
                 .usernameParameter("email")
                 .passwordParameter("pass")
-                .defaultSuccessUrl("/api/v1/user/current-user")
+                .successHandler(customAuthenticationSuccessHandler())
                 .and()
                 .oauth2Login()
                 .loginPage("/login")
@@ -75,7 +83,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .userService(oauthUserService)
                 .and()
                 .successHandler(new AuthenticationSuccessHandler() {
-
                     @Override
                     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                                         Authentication authentication) throws IOException, ServletException {
@@ -87,7 +94,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         } catch (NoSuchAlgorithmException e) {
                             throw new RuntimeException(e);
                         }
-                        response.sendRedirect("/api/v1/user/current-user");
+                        response.sendRedirect("/list");
                     }
                 })
                 //.defaultSuccessUrl("/list")
