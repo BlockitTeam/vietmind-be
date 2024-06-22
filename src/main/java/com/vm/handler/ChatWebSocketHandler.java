@@ -111,36 +111,29 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // {"type":"message", "targetUserId":"user2", "message":"Hello"}
         // or
         // {"type":"typing", "targetUserId":"user2"}
-
         String type = jsonMessage.get("type").asText();
+
         if ("message".equals(type)) {
+            Integer conversationId = jsonMessage.get("conversationId").asInt();
             String msg = jsonMessage.get("message").asText();
+            logger.info("Message from {} to {}: {}", userId, targetUserId, msg);
+
+            //Stored message
+            Message request = new Message();
+            request.setSenderId(UUID.fromString(userId));
+            request.setReceiverId(UUID.fromString(targetUserId));
+            request.setEncryptedMessage(msg);
+            request.setConversationId(conversationId);
+            request.setIsRead(true);
+            messageService.saveMessage(request);
             WebSocketSession targetSession = sessions.get(targetUserId);
+
             if (targetSession != null && targetSession.isOpen()) {
-                logger.info("Message from {} to {}: {}", userId, targetUserId, msg);
-
-                //Stored message
-                Message request = new Message();
-                request.setSenderId(Integer.valueOf(userId));
-                request.setReceiverId(Integer.valueOf(targetUserId));
-
-                //Encrypt message
-                SecretKey key = KeyManagement.loadKey();
-                String encryptedMessage = EncryptionUtil.encrypt(msg, key);
-                request.setEncryptedMessage(encryptedMessage);
-                //temp
-                request.setConversationId(0);
-                request.setIsRead(true);
-
-                messageService.saveMessage(request);
-
                 //targetUserId resend
-                String decryptedMessage = EncryptionUtil.decrypt(encryptedMessage, key);
                 ObjectNode response = objectMapper.createObjectNode();
                 response.put("fromUserId", userId);
-                response.put("message", decryptedMessage);
+                response.put("message", msg);
                 response.put("type", type);
-
                 targetSession.sendMessage(new TextMessage(response.toString()));
             } else {
                 logger.info("Target user {} is not connected.", targetUserId);

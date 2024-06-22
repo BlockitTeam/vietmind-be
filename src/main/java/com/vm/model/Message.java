@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "messages")
@@ -24,10 +25,10 @@ public class Message {
     private Integer conversationId;
 
     @Column(name = "sender_id", nullable = false)
-    private Integer senderId;
+    private UUID senderId;
 
     @Column(name = "receiver_id", nullable = false)
-    private Integer receiverId;
+    private UUID receiverId;
 
     @Column(name = "is_read", nullable = false)
     private Boolean isRead;

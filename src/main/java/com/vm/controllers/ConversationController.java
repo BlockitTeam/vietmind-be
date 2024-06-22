@@ -4,6 +4,7 @@ import com.vm.model.Response;
 import com.vm.request.PublicKeyRequest;
 import com.vm.request.QuestionObject;
 import com.vm.service.ConversationService;
+import com.vm.service.MessageService;
 import com.vm.service.ResponseService;
 import com.vm.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class ConversationController {
     private final Logger log = LoggerFactory.getLogger(ConversationController.class);
     private final ConversationService conversationService;
+    private final MessageService messageService;
 
     @GetMapping("/{conversation_id}")
     public ResponseEntity<?> getResponses(@PathVariable Integer conversation_id) {
@@ -39,5 +41,10 @@ public class ConversationController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/{conversation_id}/content")
+    public ResponseEntity<?> getContent(@PathVariable Integer conversation_id) {
+        return ResponseEntity.ok(messageService.getAllMessByConversationId(conversation_id));
     }
 }
