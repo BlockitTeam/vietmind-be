@@ -6,9 +6,12 @@ import com.vm.repo.ConversationRepository;
 import com.vm.repo.MessageRepository;
 import com.vm.service.ConversationService;
 import com.vm.service.MessageService;
+import com.vm.util.KeyManagement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
+import java.security.PublicKey;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,5 +39,29 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public Optional<Conversation> getConversationById(Integer id) {
         return conversationRepo.findById(id);
+    }
+
+    @Override
+    public String encryptConversationKey(Integer conversationId, String senderPublicKeyString) throws Exception {
+        Optional<Conversation> conversationOpt = conversationRepo.findById(conversationId);
+        if (!conversationOpt.isPresent()) {
+            throw new Exception("Conversation not found");
+        }
+
+        Conversation conversation = conversationOpt.get();
+        String encryptedConversationKey = conversation.getEncryptedConversationKey();
+
+        // Load pre-initialized AES key
+        SecretKey preInitializedAESKey = KeyManagement.loadKey();
+
+        // Decrypt the conversation key
+        SecretKey conversationKey = KeyManagement.decryptWithAES(encryptedConversationKey, preInitializedAESKey);
+
+        // Convert senderPublicKeyString to PublicKey
+        PublicKey senderPublicKey = KeyManagement.getPublicKeyFromString(senderPublicKeyString);
+
+        // Encrypt the conversation key with sender's public key
+        String encryptedConversationKeySender = KeyManagement.encryptAESKeyWithRSA(conversationKey, senderPublicKey);
+        return encryptedConversationKeySender;
     }
 }

@@ -11,4 +11,5 @@ public interface ConversationService {
 	public Conversation saveConversation(Conversation conversation) ;
 	public Conversation getConversationByUserIdAndDoctorId(UUID userId, UUID doctorId);
 	public Optional<Conversation> getConversationById(Integer id);
+	public String encryptConversationKey(Integer conversationId, String senderPublicKeyString) throws Exception;
 }

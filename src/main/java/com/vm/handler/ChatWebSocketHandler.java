@@ -69,34 +69,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             conversation.setUserId(userUUID);
             conversation.setDoctorId(doctorUUID);
 
-            // Generate AES session key
-            SecretKey sessionKey = KeyManagement.generateAESKey();
+            // Generate AES session key and stored
+            SecretKey conversationKey = KeyManagement.generateAESKey();
+            // Load the pre-initialized AES key from KeyManagement
+            SecretKey preInitializedAESKey = KeyManagement.loadKey();
 
-            // Encrypt the message with the AES session key
-            //Send code after for FE transfer
-//            Cipher aesCipher = Cipher.getInstance(AES);
-//            aesCipher.init(Cipher.ENCRYPT_MODE, sessionKey);
-//            byte[] encryptedMessageBytes = aesCipher.doFinal(message.getBytes());
-//            String encryptedMessage = Base64.getEncoder().encodeToString(encryptedMessageBytes);
-
-            // Encrypt the AES session key with the recipient's public key
-            Cipher rsaCipher = Cipher.getInstance(RSA);
-
-            String recipientPublicKeyString = userService.getPublicKeyByUserId(doctorId);
-            PublicKey recipientPublicKey = KeyUtils.getPublicKeyFromString(recipientPublicKeyString);
-            rsaCipher.init(Cipher.ENCRYPT_MODE, recipientPublicKey);
-            byte[] encryptedSessionKeyForRecipient = rsaCipher.doFinal(sessionKey.getEncoded());
-            String encryptedSessionKeyRecipient = Base64.getEncoder().encodeToString(encryptedSessionKeyForRecipient);
-
-            // Encrypt the AES session key with the sender's public key
-            String senderPublicKeyString = userService.getPublicKeyByUserId(userId);
-            PublicKey senderPublicKey = KeyUtils.getPublicKeyFromString(senderPublicKeyString);
-            rsaCipher.init(Cipher.ENCRYPT_MODE, senderPublicKey);
-            byte[] encryptedSessionKeyForSender = rsaCipher.doFinal(sessionKey.getEncoded());
-            String encryptedSessionKeySender = Base64.getEncoder().encodeToString(encryptedSessionKeyForSender);
-
-            conversation.setEncryptedSessionKeySender(encryptedSessionKeySender);
-            conversation.setEncryptedSessionKeyRecipient(encryptedSessionKeyRecipient);
+            // Encrypt the conversationKey with the pre-initialized AES key
+            String encryptedConversationKey = KeyManagement.encryptWithAES(preInitializedAESKey, Base64.getEncoder().encodeToString(conversationKey.getEncoded()));
+            conversation.setEncryptedConversationKey(encryptedConversationKey);
 
             Conversation newConversation = conversationService.saveConversation(conversation);
             conversationId = newConversation.getConversationId();

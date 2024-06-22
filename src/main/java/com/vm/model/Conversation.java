@@ -29,11 +29,8 @@ public class Conversation {
     @Column(name = "doctor_id", nullable = false)
     private UUID doctorId;
 
-    @Column(name = "encrypted_session_key_sender", columnDefinition = "TEXT", nullable = false)
-    private String encryptedSessionKeySender;
-
-    @Column(name = "encrypted_session_key_recipient", columnDefinition = "TEXT", nullable = false)
-    private String encryptedSessionKeyRecipient;
+    @Column(name = "encrypted_conversation_key", columnDefinition = "TEXT", nullable = false)
+    private String encryptedConversationKey;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

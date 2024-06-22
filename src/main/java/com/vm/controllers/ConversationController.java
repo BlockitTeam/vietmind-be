@@ -1,6 +1,7 @@
 package com.vm.controllers;
 
 import com.vm.model.Response;
+import com.vm.request.PublicKeyRequest;
 import com.vm.request.QuestionObject;
 import com.vm.service.ConversationService;
 import com.vm.service.ResponseService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/conversation")
@@ -25,5 +27,17 @@ public class ConversationController {
     @GetMapping("/{conversation_id}")
     public ResponseEntity<?> getResponses(@PathVariable Integer conversation_id) {
         return ResponseEntity.ok(conversationService.getConversationById(conversation_id));
+    }
+
+    @PostMapping("/{conversation_id}/encrypt-key")
+    public ResponseEntity<String> encryptConversationKeyForSender(
+            @PathVariable Integer conversation_id,
+            @RequestBody PublicKeyRequest publicKeyRequest) {
+        try {
+            String encryptedKey = conversationService.encryptConversationKey(conversation_id, publicKeyRequest.getPublicKey());
+            return ResponseEntity.ok(encryptedKey);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 }
