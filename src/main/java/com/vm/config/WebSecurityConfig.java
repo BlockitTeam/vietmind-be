@@ -2,7 +2,6 @@ package com.vm.config;
 
 import com.vm.constant.Provider;
 import com.vm.handler.CustomAuthenticationSuccessHandler;
-import com.vm.model.AuthResponse;
 import com.vm.service.CustomOAuth2UserService;
 import com.vm.service.UserService;
 import com.vm.service.impl.CustomOAuth2User;
@@ -10,7 +9,6 @@ import com.vm.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -21,12 +19,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 
 @Configuration
 @EnableWebSecurity
@@ -110,9 +110,30 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 })
                 //.defaultSuccessUrl("/list")
                 .and()
-                .logout().logoutSuccessUrl("/").permitAll()
+                .logout()
+                .logoutUrl("/api/v1/logout")
+                .addLogoutHandler(logoutHandler())
+                .logoutSuccessHandler(logoutSuccessHandler())
+                .permitAll()
                 .and()
                 .exceptionHandling().accessDeniedPage("/403")
         ;
     }
+
+    @Bean
+    public LogoutHandler logoutHandler() {
+        return new SecurityContextLogoutHandler();
+    }
+
+    @Bean
+    public LogoutSuccessHandler logoutSuccessHandler() {
+        return (request, response, authentication) -> {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write("{\"message\": \"Logout successful\"}");
+            response.getWriter().flush();
+        };
+    }
 }
+
+
+

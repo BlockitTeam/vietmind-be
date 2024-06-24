@@ -1,11 +1,8 @@
 package com.vm.service.impl;
 
 import com.vm.model.Conversation;
-import com.vm.model.Message;
 import com.vm.repo.ConversationRepository;
-import com.vm.repo.MessageRepository;
 import com.vm.service.ConversationService;
-import com.vm.service.MessageService;
 import com.vm.util.KeyManagement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +11,6 @@ import javax.crypto.SecretKey;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class ConversationServiceImpl implements ConversationService {
@@ -32,7 +28,7 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public Conversation getConversationByUserIdAndDoctorId(UUID userId, UUID doctorId) {
+    public Conversation getConversationByUserIdAndDoctorId(String userId, String doctorId) {
         return conversationRepo.getConversationByUserIdAndDoctorId(userId, doctorId);
     }
 

@@ -4,12 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "conversations")
@@ -23,11 +20,11 @@ public class Conversation {
     @Column(name = "conversation_id")
     private Integer conversationId;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    @Column(name = "user_id", columnDefinition = "VARCHAR(36)")
+    private String userId;
 
-    @Column(name = "doctor_id", nullable = false)
-    private UUID doctorId;
+    @Column(name = "doctor_id", columnDefinition = "VARCHAR(36)")
+    private String doctorId;
 
     @Column(name = "encrypted_conversation_key", columnDefinition = "TEXT", nullable = false)
     private String encryptedConversationKey;

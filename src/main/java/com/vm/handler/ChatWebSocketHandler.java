@@ -54,15 +54,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         //Logic save conversation here
         String doctorId = getTargetUserId(session);
-        UUID userUUID = UUID.fromString(userId);
-        UUID doctorUUID = UUID.fromString(doctorId);
 
-        Conversation conversation = conversationService.getConversationByUserIdAndDoctorId(userUUID, doctorUUID);
+        Conversation conversation = conversationService.getConversationByUserIdAndDoctorId(userId, doctorId);
         Integer conversationId;
         if (conversation == null) {
             conversation = new Conversation();
-            conversation.setUserId(userUUID);
-            conversation.setDoctorId(doctorUUID);
+            conversation.setUserId(userId);
+            conversation.setDoctorId(doctorId);
 
             // Generate AES session key and stored
             SecretKey conversationKey = KeyManagement.generateAESKey();
