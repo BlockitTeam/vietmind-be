@@ -41,14 +41,7 @@ public class UserService {
 			String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
 			// Save publicKeyString to database
 
-			// Store privateKey securely on device
-			String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
-			SecretKey key = KeyManagement.loadKey();
-			String encryptedPrivateKey = EncryptionUtil.encrypt(privateKeyString, key);
-
 			newUser.setPublicKey(publicKeyString);
-			newUser.setEncryptedPrivateKey(encryptedPrivateKey);
-
 			repo.save(newUser);
 			System.out.println("Created new user: " + username);
 		}

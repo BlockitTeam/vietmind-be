@@ -48,9 +48,6 @@ public class User {
 	@Column(name = "public_key", columnDefinition = "TEXT", nullable = false)
 	private String publicKey;
 
-	@Column(name = "encrypted_private_key", columnDefinition = "TEXT", nullable = false)
-	private String encryptedPrivateKey;
-
 	@Getter
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(
