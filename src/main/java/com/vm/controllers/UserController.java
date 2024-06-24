@@ -1,7 +1,6 @@
 package com.vm.controllers;
 
 import com.vm.model.User;
-import com.vm.request.QuestionObject;
 import com.vm.request.UserRequest;
 import com.vm.service.UserService;
 import com.vm.util.EncryptionUtil;
@@ -14,12 +13,15 @@ import org.springframework.web.bind.annotation.*;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor

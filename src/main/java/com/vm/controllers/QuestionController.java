@@ -1,6 +1,5 @@
 package com.vm.controllers;
 
-import com.vm.model.Question;
 import com.vm.request.QuestionObject;
 import com.vm.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/v1/question")
 @RequiredArgsConstructor
