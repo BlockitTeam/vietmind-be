@@ -70,6 +70,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             // Encrypt the conversationKey with the pre-initialized AES key
             String encryptedConversationKey = KeyManagement.encryptWithAES(preInitializedAESKey, Base64.getEncoder().encodeToString(conversationKey.getEncoded()));
             conversation.setEncryptedConversationKey(encryptedConversationKey);
+            conversation.setConversationKey(Base64.getEncoder().encodeToString(conversationKey.getEncoded()));
 
             Conversation newConversation = conversationService.saveConversation(conversation);
             conversationId = newConversation.getConversationId();

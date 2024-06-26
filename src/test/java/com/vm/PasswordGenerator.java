@@ -1,11 +1,6 @@
 package com.vm;
 
-import com.vm.model.Conversation;
-import com.vm.util.KeyManagement;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import javax.crypto.SecretKey;
-import java.util.Base64;
+import com.vm.util.AESEncryptionDecryption;
 
 public class PasswordGenerator {
 
@@ -29,5 +24,25 @@ public class PasswordGenerator {
 //
 //		Conversation newConversation = conversationService.saveConversation(conversation);
 //	}
+
+    public static void main(String[] args) throws Exception {
+        // Generate AES session key and stored
+//		SecretKey conversationKey = KeyManagement.generateAESKey();
+//
+//        String key = Base64.getEncoder().encodeToString(conversationKey.getEncoded());
+
+        String key = "hsPaQF7sMlpHGO+jHIRGtHZ3NFEhjPWMN7U4hD9cY6U=";
+
+//        String data = "Hello, World!";
+//        System.out.println("Original Data: " + data);
+
+//        String encryptedData = AESEncryptionDecryption.encrypt(data, key);
+//        System.out.println("Encrypted Data: " + encryptedData);
+
+        String encryptedData = "QQ/81iKnw84gO+d+EcAbfA==";
+
+        String decryptedData = AESEncryptionDecryption.decrypt(encryptedData, key);
+        System.out.println("Decrypted Data: " + decryptedData);
+    }
 
 }

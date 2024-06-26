@@ -29,6 +29,9 @@ public class Conversation {
     @Column(name = "encrypted_conversation_key", columnDefinition = "TEXT", nullable = false)
     private String encryptedConversationKey;
 
+    @Column(name = "conversation_key", columnDefinition = "TEXT")
+    private String conversationKey;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
