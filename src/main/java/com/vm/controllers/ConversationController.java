@@ -36,29 +36,6 @@ public class ConversationController {
         }
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
-    @GetMapping("/encrypt-key/encrypt-key/{conversation_id}")
-    public ResponseEntity<String> encryptConversationKeyForSenderV2(
-            @PathVariable Integer conversation_id) {
-        log.info("Call endpoint /encrypt-key/encrypt-key");
-        try {
-//            String encryptedKey = conversationService.encryptConversationKey(conversation_id, publicKeyRequest.getPublicKey());
-            return ResponseEntity.ok("Rin chan");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/test-post")
-    public ResponseEntity<String> testPost() {
-        log.info("Call endpoint /test-post");
-        try {
-            return ResponseEntity.ok("Rin chan");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
     @GetMapping("/{conversation_id}/content")
     public ResponseEntity<?> getContent(@PathVariable Integer conversation_id) {
         return ResponseEntity.ok(messageService.getAllMessByConversationId(conversation_id));
