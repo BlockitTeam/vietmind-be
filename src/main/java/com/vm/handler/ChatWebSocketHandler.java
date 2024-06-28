@@ -54,6 +54,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         //Logic save conversation here
         String doctorId = getTargetUserId(session);
+        if (doctorId == null)
+            return; //this case user connecting is Doctor
 
         Conversation conversation = conversationService.getConversationByUserIdAndDoctorId(userId, doctorId);
         Integer conversationId;
@@ -100,17 +102,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         String targetUserId = getTargetUserId(session);
         JsonNode jsonMessage = objectMapper.readTree(message.getPayload());
 
-        // Parse the payload (you can use a library like Jackson to parse JSON)
-        // For simplicity, let's assume the payload is a JSON string like:
-        // {"type":"message", "targetUserId":"user2", "message":"Hello"}
-        // or
-        // {"type":"typing", "targetUserId":"user2"}
         String type = jsonMessage.get("type").asText();
+        Integer conversationId = jsonMessage.get("conversationId").asInt();
 
         if ("message".equals(type)) {
-            Integer conversationId = jsonMessage.get("conversationId").asInt();
             String msg = jsonMessage.get("message").asText();
-            logger.info("Message from {} to {}: {}", userId, targetUserId, msg);
+            logger.info("Message from {} to {} with conversation id {} : {}", userId, targetUserId, conversationId, msg);
 
             //Stored message
             Message request = new Message();
@@ -126,6 +123,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 //targetUserId resend
                 ObjectNode response = objectMapper.createObjectNode();
                 response.put("fromUserId", userId);
+                response.put("conversationId", conversationId);
                 response.put("message", msg);
                 response.put("type", type);
                 targetSession.sendMessage(new TextMessage(response.toString()));
@@ -136,7 +134,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             // Handle typing notification
             WebSocketSession targetSession = sessions.get(targetUserId);
             if (targetSession != null) {
-                targetSession.sendMessage(new TextMessage("{\"type\":\"typing\", \"fromUserId\":\"" + userId + "\"}"));
+                ObjectNode response = objectMapper.createObjectNode();
+                response.put("type", "typing");
+                response.put("fromUserId", userId);
+                response.put("conversationId", conversationId);
+                targetSession.sendMessage(new TextMessage(response.toString()));
             }
         }
     }
@@ -150,6 +152,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private String getTargetUserId(WebSocketSession session) {
         // Assume userId is passed as a query parameter, e.g., ws://localhost:9001/ws?targetUserId=123
+        if (session.getUri().getQuery() == null)
+            return null;
         String userId = session.getUri().getQuery().split("=")[1];
         return userId;
     }
