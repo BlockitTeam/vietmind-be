@@ -31,7 +31,7 @@ public class PasswordGenerator {
 //
 //        String key = Base64.getEncoder().encodeToString(conversationKey.getEncoded());
 
-        String key = "hsPaQF7sMlpHGO+jHIRGtHZ3NFEhjPWMN7U4hD9cY6U=";
+        String key = "B3ro445UIwXAAxrcO+V0VnNlQSutJTICFzUxP7cFr2w=";
 
 //        String data = "Hello, World!";
 //        System.out.println("Original Data: " + data);
@@ -39,7 +39,7 @@ public class PasswordGenerator {
 //        String encryptedData = AESEncryptionDecryption.encrypt(data, key);
 //        System.out.println("Encrypted Data: " + encryptedData);
 
-        String encryptedData = "QQ/81iKnw84gO+d+EcAbfA==";
+        String encryptedData = "b+3CCwd2mDDpV2SlTa72XQ==";
 
         String decryptedData = AESEncryptionDecryption.decrypt(encryptedData, key);
         System.out.println("Decrypted Data: " + decryptedData);

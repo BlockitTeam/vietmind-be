@@ -1,6 +1,8 @@
 package com.vm.service.impl;
 
+import com.vm.dto.ConversationWithLastMessageDTO;
 import com.vm.model.Conversation;
+import com.vm.model.Message;
 import com.vm.repo.ConversationRepository;
 import com.vm.service.ConversationService;
 import com.vm.util.KeyManagement;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +21,22 @@ public class ConversationServiceImpl implements ConversationService {
     private ConversationRepository conversationRepo;
 
     @Override
-    public List<Conversation> getConversationByUserId(Long userId) {
-        return List.of();
+    public List<ConversationWithLastMessageDTO> getConversationsWithLastMessageByUserId(String userId) {
+        List<Object[]> results = conversationRepo.findAllConversationsWithLastMessageByUserId(userId);
+        List<ConversationWithLastMessageDTO> conversations = new ArrayList<>();
+
+        for (Object[] result : results) {
+            Conversation conversation = (Conversation) result[0];
+            Message lastMessage = (Message) result[1];
+            String senderFirstName = (String) result[2];
+            String senderLastName = (String) result[3];
+            String receiverFirstName = (String) result[4];
+            String receiverLastName = (String) result[5];
+            String senderFullName = senderLastName + " " + senderFirstName;
+            String receiverFullName = receiverLastName + " " + receiverFirstName;
+            conversations.add(new ConversationWithLastMessageDTO(conversation, lastMessage, senderFullName, receiverFullName));
+        }
+        return conversations;
     }
 
     @Override

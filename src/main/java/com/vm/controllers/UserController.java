@@ -140,8 +140,11 @@ public class UserController {
         return new String(decryptedBytes);
     }
 
-    @GetMapping("/get-public-key/{user_id}")
-    public ResponseEntity<?> getPublicKey(@PathVariable String user_id) {
-        return new ResponseEntity<>(userService.getPublicKeyByUserId(user_id), HttpStatus.OK);
+    @GetMapping("/get-doctors")
+    public ResponseEntity<?> getDoctors() {
+//        userService.getCurrentUser(username);
+//
+//        return new ResponseEntity<>(userService.getPublicKeyByUserId(user_id), HttpStatus.OK);
+        return null;
     }
 }
