@@ -18,6 +18,13 @@ public interface UserRepository extends CrudRepository<User, UUID> {
 	@Query("SELECT u.publicKey FROM User u WHERE u.id = :userid")
 	public String getPublicKeyByUserid(@Param("userid") UUID userid);
 
-	@Query("SELECT u FROM User u WHERE u.username = :username")
-	public List<User> getDoctors();
+	@Query("SELECT DISTINCT u FROM User u JOIN u.roles r WHERE r.id = 1")
+	List<User> getDoctors();
+
+	@Query("SELECT DISTINCT u, c.conversationId " +
+			"FROM User u " +
+			"JOIN u.roles r " +
+			"LEFT JOIN Conversation c ON (u.id = c.doctorId OR u.id = c.userId) " +
+			"WHERE r.id = 1 AND (c.userId = :userId OR c.doctorId = :userId)")
+	List<Object[]> getDoctorsWithConversationsByUserId(@Param("userId") UUID userId);
 }

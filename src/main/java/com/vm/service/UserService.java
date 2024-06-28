@@ -1,12 +1,14 @@
 package com.vm.service;
 
 import com.vm.constant.Provider;
+import com.vm.dto.UserDTO;
 import com.vm.repo.UserRepository;
 import com.vm.model.User;
 import com.vm.request.UserRequest;
 import com.vm.service.impl.CustomOAuth2User;
 import com.vm.util.EncryptionUtil;
 import com.vm.util.KeyManagement;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,12 +19,17 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.security.*;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 	@Autowired
 	private UserRepository repo;
+
+	@Autowired
+	private ModelMapper modelMapper;
 
 	public void processOAuthPostLogin(String username, Provider provider) throws Exception {
 		User existUser = repo.getUserByUsername(username);
@@ -49,7 +56,26 @@ public class UserService {
 
 	public User getCurrentUser(String username) {
 		User existUser = repo.getUserByUsername(username);
+		existUser.setPassword(null);
 		return existUser;
+	}
+
+	public List<User> getDoctors() {
+		return repo.getDoctors();
+	}
+
+	public List<UserDTO> getDoctorsWithConversations(UUID userId) {
+		List<Object[]> results = repo.getDoctorsWithConversationsByUserId(userId);
+
+		return results.stream()
+				.map(result -> {
+					User user = (User) result[0];
+					Integer conversationId = (Integer) result[1];
+					UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+					userDTO.setConversationId(conversationId);
+					return userDTO;
+				})
+				.collect(Collectors.toList());
 	}
 
 	public User update(UserRequest request, String userName) {

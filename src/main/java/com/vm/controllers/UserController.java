@@ -1,11 +1,14 @@
 package com.vm.controllers;
 
+import com.vm.dto.UserDTO;
 import com.vm.model.User;
 import com.vm.request.UserRequest;
 import com.vm.service.UserService;
 import com.vm.util.EncryptionUtil;
 import com.vm.util.KeyManagement;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +23,9 @@ import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 @RestController
@@ -140,11 +146,18 @@ public class UserController {
         return new String(decryptedBytes);
     }
 
-    @GetMapping("/get-doctors")
+    @GetMapping("/doctors")
     public ResponseEntity<?> getDoctors() {
-//        userService.getCurrentUser(username);
-//
-//        return new ResponseEntity<>(userService.getPublicKeyByUserId(user_id), HttpStatus.OK);
-        return null;
+        List<User> doctors = userService.getDoctors();
+        ModelMapper modelMapper = new ModelMapper();
+        return new ResponseEntity<>(doctors.stream()
+                .map(user -> modelMapper.map(user, UserDTO.class))
+                .collect(Collectors.toList()), HttpStatus.OK);
     }
+
+//    @GetMapping("/doctors2")
+//    public ResponseEntity<?> getDoctors2() {
+//        List<UserDTO> doctors = userService.getDoctorsWithConversations(userService.getCurrentUserId());
+//        return new ResponseEntity<>(doctors, HttpStatus.OK);
+//    }
 }
