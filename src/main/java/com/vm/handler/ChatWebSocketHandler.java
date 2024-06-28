@@ -114,8 +114,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             //Stored message
             Message request = new Message();
-            request.setSenderId(UUID.fromString(userId));
-            request.setReceiverId(UUID.fromString(targetUserId));
+            request.setSenderId(userId);
+            request.setReceiverId(targetUserId);
             request.setEncryptedMessage(msg);
             request.setConversationId(conversationId);
             request.setIsRead(true);

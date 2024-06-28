@@ -25,10 +25,10 @@ public class Message {
     private Integer conversationId;
 
     @Column(name = "sender_id", nullable = false)
-    private UUID senderId;
+    private String senderId;
 
     @Column(name = "receiver_id", nullable = false)
-    private UUID receiverId;
+    private String receiverId;
 
     @Column(name = "is_read", nullable = false)
     private Boolean isRead;
