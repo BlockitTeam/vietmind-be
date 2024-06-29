@@ -2,6 +2,7 @@ package com.vm.controllers;
 
 import com.vm.model.AuthResponse;
 import com.vm.request.LoginRequest;
+import com.vm.request.TokenRequest;
 import com.vm.service.FacebookAuthService;
 import com.vm.service.GoogleTokenVerifier;
 import com.vm.service.UserService;
@@ -19,7 +20,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -69,19 +69,6 @@ public class AuthController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse("Invalid ID token"));
-        }
-    }
-
-    public static class TokenRequest {
-        private String token;
-        private String provider;
-
-        public String getToken() {
-            return token;
-        }
-
-        public String getProvider() {
-            return provider;
         }
     }
 

@@ -112,8 +112,4 @@ public class UserService {
 	public UUID getUserIdByUserName(String username) {
 		return repo.getUserIdByUsername(username);
 	}
-
-	public String getPublicKeyByUserId (String user_id) {
-		return repo.getPublicKeyByUserid(UUID.fromString(user_id));
-	}
 }

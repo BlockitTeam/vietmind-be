@@ -52,11 +52,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         sessions.put(userId, session);
         logger.info("User {} connected. Session ID: {}", userId, session.getId());
 
-        //Logic save conversation here
         String doctorId = getTargetUserId(session);
         if (doctorId == null)
             return; //this case user connecting is Doctor
 
+        //Logic new conversation here
         Conversation conversation = conversationService.getConversationByUserIdAndDoctorId(userId, doctorId);
         Integer conversationId;
         if (conversation == null) {
