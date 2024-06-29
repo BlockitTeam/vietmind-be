@@ -1,7 +1,6 @@
 package com.vm.controllers;
 
 import com.vm.dto.ConversationWithLastMessageDTO;
-import com.vm.model.Conversation;
 import com.vm.request.PublicKeyRequest;
 import com.vm.service.ConversationService;
 import com.vm.service.MessageService;
@@ -49,6 +48,7 @@ public class ConversationController {
     }
 
     @GetMapping("")
+//    @PreAuthorize("hasRole('ROLE_DOCTOR')")
     public ResponseEntity<?> getAllConversationOfCurrentUser() {
         try {
             UUID currentUserId = userService.getCurrentUserId();
