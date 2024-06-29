@@ -103,13 +103,12 @@ public class AuthController {
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             authenticationSuccessHandler.onAuthenticationSuccess(null, response, authentication);
-            ResponseEntity.ok(new AuthResponse("Authentication successful"));
+            return ResponseEntity.ok().build();
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed");
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed");
     }
 
     @PostMapping("/logout")

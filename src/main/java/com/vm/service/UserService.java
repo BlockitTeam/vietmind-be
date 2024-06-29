@@ -37,18 +37,6 @@ public class UserService {
 			User newUser = new User();
 			newUser.setUsername(username);
 			newUser.setProvider(provider);
-
-			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-			keyPairGenerator.initialize(2048);
-			KeyPair keyPair = keyPairGenerator.generateKeyPair();
-			PublicKey publicKey = keyPair.getPublic();
-			PrivateKey privateKey = keyPair.getPrivate();
-
-			// Convert public key to string to store in database
-			String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
-			// Save publicKeyString to database
-
-			newUser.setPublicKey(publicKeyString);
 			repo.save(newUser);
 			System.out.println("Created new user: " + username);
 		}
