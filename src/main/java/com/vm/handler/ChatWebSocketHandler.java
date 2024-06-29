@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vm.model.Conversation;
 import com.vm.model.Message;
+import com.vm.request.SocketResponse;
 import com.vm.service.ConversationService;
 import com.vm.service.MessageService;
 import com.vm.service.UserService;
@@ -14,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -24,7 +27,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,9 +35,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(ChatWebSocketHandler.class);
     private final ConcurrentMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private static final String RSA = "RSA";
-    private static final String AES = "AES";
 
     @Autowired
     private MessageService messageService;
@@ -84,62 +83,46 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         session.sendMessage(new TextMessage(response.toString()));
     }
 
-    private @Nullable String getCurrentUserId(WebSocketSession session) {
-        Object principal = session.getPrincipal();
-        String userId = null;
-        if (principal instanceof UsernamePasswordAuthenticationToken) {
-            userId = ((MyUserDetails) ((UsernamePasswordAuthenticationToken) principal).getPrincipal()).getUserId();
-        } else if (principal instanceof OAuth2AuthenticationToken) {
-            String username = ((OAuth2AuthenticationToken) principal).getPrincipal().getAttributes().get("email").toString();
-            userId = String.valueOf(userService.getUserIdByUserName(username));
-        }
-        return userId;
-    }
-
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String userId = getCurrentUserId(session);
-        String targetUserId = getTargetUserId(session);
-        JsonNode jsonMessage = objectMapper.readTree(message.getPayload());
+        try {
+            String userId = getCurrentUserId(session);
+            JsonNode jsonMessage = objectMapper.readTree(message.getPayload());
+            String targetUserId = getTargetUserId(session) == null ? jsonMessage.get("targetUserId").asText() : getTargetUserId(session);
 
-        String type = jsonMessage.get("type").asText();
-        Integer conversationId = jsonMessage.get("conversationId").asInt();
+            String type = jsonMessage.get("type").asText();
+            Integer conversationId = jsonMessage.get("conversationId").asInt();
 
-        if ("message".equals(type)) {
-            String msg = jsonMessage.get("message").asText();
-            logger.info("Message from {} to {} with conversation id {} : {}", userId, targetUserId, conversationId, msg);
+            if ("message".equals(type)) {
+                String msg = jsonMessage.get("message").asText();
+                logger.info("Message from {} to {} with conversation id {} : {}", userId, targetUserId, conversationId, msg);
 
-            //Stored message
-            Message request = new Message();
-            request.setSenderId(userId);
-            request.setReceiverId(targetUserId);
-            request.setEncryptedMessage(msg);
-            request.setConversationId(conversationId);
-            request.setIsRead(true);
-            messageService.saveMessage(request);
-            WebSocketSession targetSession = sessions.get(targetUserId);
+                //Stored message
+                Message request = Message.builder().senderId(userId).receiverId(targetUserId)
+                        .encryptedMessage(msg).conversationId(conversationId).isRead(true).build();
+                messageService.saveMessage(request);
+                WebSocketSession targetSession = sessions.get(targetUserId);
 
-            if (targetSession != null && targetSession.isOpen()) {
-                //targetUserId resend
-                ObjectNode response = objectMapper.createObjectNode();
-                response.put("fromUserId", userId);
-                response.put("conversationId", conversationId);
-                response.put("message", msg);
-                response.put("type", type);
-                targetSession.sendMessage(new TextMessage(response.toString()));
-            } else {
-                logger.info("Target user {} is not connected.", targetUserId);
+                if (targetSession != null && targetSession.isOpen()) {
+                    //Send message to targetUserId
+                    SocketResponse res = SocketResponse.builder().fromUserId(userId)
+                            .conversationId(conversationId).message(msg).type(type).build();
+                    targetSession.sendMessage(new TextMessage(res.toString()));
+                } else {
+                    logger.info("Target user {} is not connected.", targetUserId);
+                }
+            } else if ("typing".equals(type)) {
+                // Handle typing notification
+                WebSocketSession targetSession = sessions.get(targetUserId);
+                if (targetSession != null) {
+                    SocketResponse res = SocketResponse.builder().fromUserId(userId)
+                            .conversationId(conversationId).type(type).build();
+                    targetSession.sendMessage(new TextMessage(res.toString()));
+                }
             }
-        } else if ("typing".equals(type)) {
-            // Handle typing notification
-            WebSocketSession targetSession = sessions.get(targetUserId);
-            if (targetSession != null) {
-                ObjectNode response = objectMapper.createObjectNode();
-                response.put("type", "typing");
-                response.put("fromUserId", userId);
-                response.put("conversationId", conversationId);
-                targetSession.sendMessage(new TextMessage(response.toString()));
-            }
+        } catch (Exception ex) {
+            logger.error("Failed to send message", ex);
+            throw ex;
         }
     }
 
@@ -155,6 +138,18 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         if (session.getUri().getQuery() == null)
             return null;
         String userId = session.getUri().getQuery().split("=")[1];
+        return userId;
+    }
+
+    private @Nullable String getCurrentUserId(WebSocketSession session) {
+        Object principal = session.getPrincipal();
+        String userId = null;
+        if (principal instanceof UsernamePasswordAuthenticationToken) {
+            userId = ((MyUserDetails) ((UsernamePasswordAuthenticationToken) principal).getPrincipal()).getUserId();
+        } else if (principal instanceof OAuth2AuthenticationToken) {
+            String username = ((OAuth2AuthenticationToken) principal).getPrincipal().getAttributes().get("email").toString();
+            userId = String.valueOf(userService.getUserIdByUserName(username));
+        }
         return userId;
     }
 }
