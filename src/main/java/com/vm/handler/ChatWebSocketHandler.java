@@ -15,8 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -27,6 +25,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -89,9 +88,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             String userId = getCurrentUserId(session);
             JsonNode jsonMessage = objectMapper.readTree(message.getPayload());
             String targetUserId = getTargetUserId(session) == null ? jsonMessage.get("targetUserId").asText() : getTargetUserId(session);
-
             String type = jsonMessage.get("type").asText();
-            Integer conversationId = jsonMessage.get("conversationId").asInt();
+            int conversationId = jsonMessage.get("conversationId").asInt();
 
             if ("message".equals(type)) {
                 String msg = jsonMessage.get("message").asText();
@@ -135,10 +133,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private String getTargetUserId(WebSocketSession session) {
         // Assume userId is passed as a query parameter, e.g., ws://localhost:9001/ws?targetUserId=123
-        if (session.getUri().getQuery() == null)
+        if (Objects.requireNonNull(session.getUri()).getQuery() == null)
             return null;
-        String userId = session.getUri().getQuery().split("=")[1];
-        return userId;
+        try {
+            return session.getUri().getQuery().split("=")[1];
+        } catch (Exception ex) {
+            logger.error("Error get targetUserId: {}", ex.getMessage());
+            return null;
+        }
     }
 
     private @Nullable String getCurrentUserId(WebSocketSession session) {
