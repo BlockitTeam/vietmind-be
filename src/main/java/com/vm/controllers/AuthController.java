@@ -84,7 +84,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
-            log.info("Call /login ---- : ");
+            log.info("/login ---- : ");
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsername(),
@@ -99,6 +99,12 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed");
         }
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<?> test() {
+        log.info("/test ---- : ");
+        return ResponseEntity.ok("Hello !!!!");
     }
 
     @PostMapping("/logout")
