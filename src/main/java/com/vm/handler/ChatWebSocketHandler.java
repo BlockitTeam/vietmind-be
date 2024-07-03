@@ -109,8 +109,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 } else {
                     logger.info("Target user {} is not connected.", targetUserId);
                 }
-            } else if ("typing".equals(type)) {
-                // Handle typing notification
+            } else {
+                // Handle typing and unTyping notification
                 WebSocketSession targetSession = sessions.get(targetUserId);
                 if (targetSession != null) {
                     SocketResponse res = SocketResponse.builder().fromUserId(userId)
