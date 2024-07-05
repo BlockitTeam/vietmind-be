@@ -23,38 +23,52 @@ public class ResponseController {
     private final UserService userService;
 
     @GetMapping("")
-    public ResponseEntity<List<Response>> getResponses() {
-        List<Response> questions = responseService.getResponseBySurveyId(1L);
-        return ResponseEntity.ok(questions);
+    public ResponseEntity<?> getResponses() {
+        try {
+            log.info("/response get all ---- : ");
+            List<Response> questions = responseService.getResponseBySurveyId(1L);
+            return ResponseEntity.ok(questions);
+        } catch (Exception e) {
+            log.error("/response get all  error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @PostMapping("")
     public ResponseEntity<?> saveResponseForGeneralSurvey(@RequestBody List<QuestionObject> request) {
         try {
+            log.info("/response save ---- : ");
             responseService.saveResponse(request);
             userService.markCompleteGeneralSurvey(true);
             return new ResponseEntity<>("Save response successfully", HttpStatus.CREATED);
-        }  catch (Exception e) {
-            log.error("Failed to save response", e);
+        } catch (Exception e) {
+            log.error("/response failed to save response", e);
             return new ResponseEntity<>("Failed to save response", HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("result")
     public ResponseEntity<?> getResult() {
-        Map<String, String> result = responseService.getResult();
-        return ResponseEntity.ok(result);
+        try {
+            log.info("/result ---- : ");
+            Map<String, String> result = responseService.getResult();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("/result error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @DeleteMapping("")
     public ResponseEntity<?> clearResult() throws Exception {
         try {
+            log.info("/result delete---- : ");
             Long surveyId = 1L;
             responseService.deleteResponses(surveyId);
             userService.markCompleteGeneralSurvey(false);
             return new ResponseEntity<>("Delete successfully", HttpStatus.OK);
         } catch (Exception e) {
-            log.error("Failed to delete response", e);
+            log.error("/result failed to delete response", e);
             return new ResponseEntity<>("Failed to delete response", HttpStatus.BAD_REQUEST);
         }
     }

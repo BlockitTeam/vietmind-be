@@ -26,7 +26,13 @@ public class ConversationController {
 
     @GetMapping("/{conversation_id}")
     public ResponseEntity<?> getResponses(@PathVariable Integer conversation_id) {
-        return ResponseEntity.ok(conversationService.getConversationById(conversation_id));
+        try {
+            log.info("/conversation by id ---- : ");
+            return ResponseEntity.ok(conversationService.getConversationById(conversation_id));
+        } catch (Exception e) {
+            log.error("/conversation by id error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @PostMapping("/{conversation_id}/encrypt-key")
@@ -34,26 +40,36 @@ public class ConversationController {
             @PathVariable Integer conversation_id,
             @RequestBody PublicKeyRequest publicKeyRequest) {
         try {
+            log.info("/encrypt-key by conversation_id ---- : ");
             String encryptedKey = conversationService.encryptConversationKey(conversation_id, publicKeyRequest.getPublicKey());
             return ResponseEntity.ok(encryptedKey);
         } catch (Exception e) {
+            log.error("/encrypt-key by conversation_id error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
     @GetMapping("/{conversation_id}/content")
     public ResponseEntity<?> getContent(@PathVariable Integer conversation_id) {
-        return ResponseEntity.ok(messageService.getAllMessByConversationId(conversation_id));
+        try {
+            log.info("/content by conversation_id ---- : ");
+            return ResponseEntity.ok(messageService.getAllMessByConversationId(conversation_id));
+        } catch (Exception e) {
+            log.error("/content by conversation_id error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @GetMapping("")
 //    @PreAuthorize("hasRole('ROLE_DOCTOR')")
     public ResponseEntity<?> getAllConversationOfCurrentUser() {
         try {
+            log.info("/getAllConversationOfCurrentUser ---- : ");
             UUID currentUserId = userService.getCurrentUserId();
             List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(String.valueOf(currentUserId));
             return ResponseEntity.ok(conversations);
         } catch (Exception e) {
+            log.error("/getAllConversationOfCurrentUser error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

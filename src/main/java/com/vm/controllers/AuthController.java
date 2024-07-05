@@ -55,6 +55,7 @@ public class AuthController {
     @PostMapping("")
     public ResponseEntity<?> authenticate(@RequestBody TokenRequest tokenRequest) {
         try {
+            log.info("/auth ---- : ");
             String token = tokenRequest.getToken();
             // Check if token has already been used
             if (tokenStore.isTokenUsed(token)) {
@@ -70,6 +71,7 @@ public class AuthController {
                     return ResponseEntity.badRequest().body("Unsupported provider");
             }
         } catch (Exception e) {
+            log.error("/auth error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse("Invalid ID token"));
         }
     }
@@ -95,8 +97,10 @@ public class AuthController {
             authenticationSuccessHandler.onAuthenticationSuccess(null, response, authentication);
             return ResponseEntity.ok().build();
         } catch (BadCredentialsException e) {
+            log.error("/login error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         } catch (Exception e) {
+            log.error("/login error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed");
         }
     }
