@@ -10,7 +10,9 @@ import com.vm.util.TokenStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -55,7 +57,7 @@ public class AuthController {
     @PostMapping("")
     public ResponseEntity<?> authenticate(@RequestBody TokenRequest tokenRequest) {
         try {
-            log.info("/auth ---- : ");
+            log.info("/auth ---- ");
             String token = tokenRequest.getToken();
             // Check if token has already been used
             if (tokenStore.isTokenUsed(token)) {
@@ -86,7 +88,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
-            log.info("/login ---- : ");
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsername(),
@@ -95,6 +96,7 @@ public class AuthController {
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             authenticationSuccessHandler.onAuthenticationSuccess(null, response, authentication);
+            log.info("/login successfully ---- : " + loginRequest.getUsername());
             return ResponseEntity.ok().build();
         } catch (BadCredentialsException e) {
             log.error("/login error: {}", e.getMessage(), e);
@@ -105,18 +107,28 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/test")
-    public ResponseEntity<?> test() {
-        log.info("/test ---- : ");
-        return ResponseEntity.ok("Hello !!!!");
-    }
-
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
+        try {
+            log.info("/logout ---- ");
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null) {
+                new SecurityContextLogoutHandler().logout(request, response, authentication);
+            }
+            // Clear the JSESSIONID cookie
+            ResponseCookie cookie = ResponseCookie.from("JSESSIONID", null)
+                    .path("/")
+                    .httpOnly(true)
+                    .maxAge(0)  // Set the max age to 0 to delete the cookie
+                    .secure(true)  // Set this according to your needs, usually true for HTTPS
+                    .sameSite("Lax")  // Set the same site policy as required
+                    .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            return ResponseEntity.ok("{\"message\": \"Logout successful\"}");
+        } catch (Exception e) {
+            log.error("/logout error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-        return ResponseEntity.ok("{\"message\": \"Logout successful\"}");
     }
 }

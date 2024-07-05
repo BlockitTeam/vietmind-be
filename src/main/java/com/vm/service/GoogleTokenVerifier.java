@@ -92,10 +92,11 @@ public class GoogleTokenVerifier {
                     "google"
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("/login successfully ---- : {}", email);
             tokenStore.markTokenAsUsed(userToken);
             return new AuthResponse("Authentication successful");
         } catch (Exception exception) {
-            log.error("Failed to authenticate", exception.getMessage());
+            log.error("Failed to authenticate : {}", exception.getMessage());
             throw exception;
         }
     }
