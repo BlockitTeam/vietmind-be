@@ -1,6 +1,7 @@
 package com.vm.model;
 
 import com.vm.constant.Provider;
+import com.vm.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

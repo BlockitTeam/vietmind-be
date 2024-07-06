@@ -121,7 +121,7 @@ public class AuthController {
                     .httpOnly(true)
                     .maxAge(0)  // Set the max age to 0 to delete the cookie
                     .secure(true)  // Set this according to your needs, usually true for HTTPS
-                    .sameSite("Lax")  // Set the same site policy as required
+//                    .sameSite("Lax")  // Set the same site policy as required
                     .build();
 
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

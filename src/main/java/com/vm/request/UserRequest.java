@@ -1,15 +1,10 @@
 package com.vm.request;
 
-import com.vm.constant.Provider;
-import com.vm.model.Gender;
+import com.vm.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 
 @Getter
 @Setter

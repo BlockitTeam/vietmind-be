@@ -1,6 +1,6 @@
 package com.vm.dto;
 
-import com.vm.model.Gender;
+import com.vm.enums.Gender;
 import lombok.Getter;
 import lombok.Setter;
 
