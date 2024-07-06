@@ -77,4 +77,15 @@ public class ConversationServiceImpl implements ConversationService {
         String encryptedConversationKeySender = KeyManagement.encryptAESKeyWithRSA(conversationKey, senderPublicKey);
         return encryptedConversationKeySender;
     }
+
+    @Override
+    public String getNoteByConversationId(Integer conversationId) {
+        return conversationRepo.findNoteByConversationId(conversationId);
+
+    }
+
+    @Override
+    public void updateNoteByConversationId(Integer conversationId, String note) {
+        conversationRepo.updateNoteByConversationId(conversationId, note);
+    }
 }

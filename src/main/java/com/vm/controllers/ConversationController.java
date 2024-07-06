@@ -64,12 +64,36 @@ public class ConversationController {
 //    @PreAuthorize("hasRole('ROLE_DOCTOR')")
     public ResponseEntity<?> getAllConversationOfCurrentUser() {
         try {
-            log.info("/getAllConversationOfCurrentUser ---- : ");
+            log.info("/getAllConversationOfCurrentUser ---- ");
             UUID currentUserId = userService.getCurrentUUID();
             List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(String.valueOf(currentUserId));
             return ResponseEntity.ok(conversations);
         } catch (Exception e) {
             log.error("/getAllConversationOfCurrentUser error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{conversationId}/note")
+    public ResponseEntity<String> getNoteByConversationId(@PathVariable Integer conversationId) {
+        try {
+            log.info("/note by conversationId ---- : ");
+            String note = conversationService.getNoteByConversationId(conversationId);
+            return ResponseEntity.ok(note);
+        } catch (Exception e) {
+            log.error("/note by conversationId error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{conversationId}/note")
+    public ResponseEntity<?> updateNoteByConversationId(@PathVariable Integer conversationId, @RequestBody String note) {
+        try {
+            log.info("/note post data by conversationId ---- : ");
+            conversationService.updateNoteByConversationId(conversationId, note);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("/note post data by conversationId error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

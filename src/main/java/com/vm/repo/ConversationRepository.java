@@ -1,9 +1,11 @@
 package com.vm.repo;
 
 import com.vm.model.Conversation;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,4 +26,12 @@ public interface ConversationRepository extends CrudRepository<Conversation, Int
             "WHERE (c.userId = :userId OR c.doctorId = :userId) " +
             "AND m.createdAt = (SELECT MAX(m2.createdAt) FROM Message m2 WHERE m2.conversationId = c.conversationId)")
     List<Object[]> findAllConversationsWithLastMessageByUserId(@Param("userId") String userId);
+
+    @Query("SELECT c.note FROM Conversation c WHERE c.conversationId = :conversationId")
+    String findNoteByConversationId(@Param("conversationId") Integer conversationId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Conversation c SET c.note = :note WHERE c.conversationId = :conversationId")
+    void updateNoteByConversationId(@Param("conversationId") Integer conversationId, @Param("note") String note);
 }

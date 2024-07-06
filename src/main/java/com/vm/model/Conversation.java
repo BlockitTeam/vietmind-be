@@ -35,10 +35,14 @@ public class Conversation {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "note", columnDefinition = "TEXT")
+    private String note;
+
     private boolean isFinished = false;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.note = "";
     }
 }
