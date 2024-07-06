@@ -7,7 +7,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +19,10 @@ public interface ResponseRepository extends CrudRepository<Response, Long> {
 			"FROM responses res " +
 			"JOIN options opt ON res.option_id = opt.option_id " +
 			"JOIN questions quest ON quest.question_id = opt.question_id " +
-			"JOIN question_type quest_t ON quest_t.question_type_id = quest.question_type_id",
+			"JOIN question_type quest_t ON quest_t.question_type_id = quest.question_type_id " +
+			"WHERE res.user_id = :userId",
 			nativeQuery = true)
-	List<Map<String, Object>> getAggregatedResponses();
+	List<Map<String, Object>> getAggregatedResponses(@Param("userId") String userId);
 
 	@Modifying
 	@Transactional

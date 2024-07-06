@@ -65,7 +65,7 @@ public class ConversationController {
     public ResponseEntity<?> getAllConversationOfCurrentUser() {
         try {
             log.info("/getAllConversationOfCurrentUser ---- : ");
-            UUID currentUserId = userService.getCurrentUserId();
+            UUID currentUserId = userService.getCurrentUUID();
             List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(String.valueOf(currentUserId));
             return ResponseEntity.ok(conversations);
         } catch (Exception e) {

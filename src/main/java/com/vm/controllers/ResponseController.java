@@ -51,10 +51,22 @@ public class ResponseController {
     public ResponseEntity<?> getResult() {
         try {
             log.info("/result ---- : ");
-            Map<String, String> result = responseService.getResult();
+            Map<String, String> result = responseService.getResult(userService.getStringCurrentUserId());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("/result error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("result/{user_id}")
+    public ResponseEntity<?> getResultByUserId(@PathVariable String user_id) {
+        try {
+            log.info("/result by user_id ---- : ");
+            Map<String, String> result = responseService.getResult(user_id);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("/result by user_id error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

@@ -105,13 +105,17 @@ public class UserService {
 		return username;
 	}
 
-	public UUID getCurrentUserId() {
+	public UUID getCurrentUUID() {
 		String userName = getCurrentUserName();
 		return userRepo.getUserIdByUsername(userName);
 	}
 
+	public String getStringCurrentUserId() {
+		return getCurrentUUID().toString();
+	}
+
 	public void markCompleteGeneralSurvey(boolean surveyCompleted) {
-		UUID currentUserId = getCurrentUserId();
+		UUID currentUserId = getCurrentUUID();
 		User user = userRepo.findById(currentUserId).get();
 		user.setSurveyCompleted(surveyCompleted);
 		userRepo.save(user);

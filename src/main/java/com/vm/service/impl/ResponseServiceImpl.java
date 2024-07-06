@@ -46,15 +46,15 @@ public class ResponseServiceImpl implements ResponseService {
 			Object answer = ele.getAnswer();
 			if (answer instanceof Number)
 				response.setOptionId(((Number) answer).longValue());
-			response.setUserId(userService.getCurrentUserId());
+			response.setUserId(userService.getStringCurrentUserId());
 			responses.add(response);
 		}
 		return (List<Response>) responseRepo.saveAll(responses);
 	}
 
 	@Override
-	public Map<String, String> getResult() {
-		List<Map<String, Object>> result = responseRepo.getAggregatedResponses();
+	public Map<String, String> getResult(String userId) {
+		List<Map<String, Object>> result = responseRepo.getAggregatedResponses(userId);
 		Map<String, Integer> aggregatedScores = result.stream()
 				.collect(Collectors.groupingBy(
 						map -> (String) map.get("questionType"),

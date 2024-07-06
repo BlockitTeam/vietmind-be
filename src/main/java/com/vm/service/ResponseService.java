@@ -11,6 +11,6 @@ public interface ResponseService {
 //	public QuestionObject getQuestionById(Long question_id);
 	public List<Response> getResponseBySurveyId(Long survey_id);
 	public List<Response> saveResponse(List<QuestionObject> request) ;
-	public Map<String, String> getResult();
+	public Map<String, String> getResult(String userId);
 	public void deleteResponses(Long survey_id);
 }
