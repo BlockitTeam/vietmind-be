@@ -52,7 +52,8 @@ public class UserService {
 
 	public User getCurrentUser(String username) {
 		User existUser = userRepo.getUserByUsername(username);
-		existUser.setPassword(null);
+		if (existUser != null)
+			existUser.setPassword(null);
 		return existUser;
 	}
 
