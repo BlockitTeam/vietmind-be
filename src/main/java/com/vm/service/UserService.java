@@ -3,9 +3,9 @@ package com.vm.service;
 import com.vm.constant.Provider;
 import com.vm.dto.UserDTO;
 import com.vm.model.Role;
+import com.vm.model.User;
 import com.vm.repo.RoleRepository;
 import com.vm.repo.UserRepository;
-import com.vm.model.User;
 import com.vm.request.UserRequest;
 import com.vm.service.impl.CustomOAuth2User;
 import org.modelmapper.ModelMapper;
@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -118,5 +119,15 @@ public class UserService {
 
 	public UUID getUserIdByUserName(String username) {
 		return userRepo.getUserIdByUsername(username);
+	}
+
+	public Map<String, Object> getBasicInfo(String userId) {
+		Map<String, Object> userInfo = userRepo.getBasicInfo(UUID.fromString(userId));
+		if (userInfo.containsKey("birthYear")) {
+			Integer birthYear = (Integer) userInfo.get("birthYear");
+			Integer age = (birthYear != null) ? java.time.LocalDate.now().getYear() - birthYear : null;
+			userInfo.put("age", age);
+		}
+		return userInfo;
 	}
 }

@@ -1,5 +1,6 @@
 package com.vm.config;
 
+import com.vm.handler.CustomAccessDeniedHandler;
 import com.vm.handler.CustomAuthenticationSuccessHandler;
 import com.vm.service.CustomOAuth2UserService;
 import com.vm.service.UserService;
@@ -34,6 +35,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -77,7 +81,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/v1/auth", "/api/v1/auth/login", "/api/v1/auth/test").permitAll() // Allow access to /api/auth/token without authentication
+                .antMatchers("/api/v1/auth", "/api/v1/auth/login", "/api/v1/auth/logout").permitAll() // Allow access to /api/auth/token without authentication
                 .anyRequest().authenticated()
                 .and()
                 .logout()
@@ -86,7 +90,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessHandler(logoutSuccessHandler())
                 .permitAll()
                 .and()
-                .exceptionHandling().accessDeniedPage("/403")
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler) // Set custom access denied handler
         ;
     }
 
@@ -103,18 +108,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             response.getWriter().flush();
         };
     }
-
-//    @Bean
-//    public CorsFilter corsFilter() {
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowCredentials(true);
-//        config.addAllowedOrigin("http://localhost:3000"); // Adjust this as per your frontend origin
-//        config.addAllowedHeader("*");
-//        config.addAllowedMethod("*");
-//        source.registerCorsConfiguration("/**", config);
-//        return new CorsFilter(source);
-//    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

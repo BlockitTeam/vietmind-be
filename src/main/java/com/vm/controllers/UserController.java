@@ -25,7 +25,7 @@ public class UserController {
     @GetMapping("/current-user")
     public ResponseEntity<?> getCurrentUser() {
         try {
-            log.info("/current-user ---- : ");
+            log.info("/current-user ---- ");
             String username = userService.getCurrentUserName();
             return new ResponseEntity<>(userService.getCurrentUser(username), HttpStatus.OK);
         } catch (Exception e) {
@@ -37,7 +37,7 @@ public class UserController {
     @PutMapping("")
     public ResponseEntity<?> update(@RequestBody UserRequest request) throws Exception {
         try {
-            log.info("/update user ---- : ");
+            log.info("/update user ---- ");
             String username = userService.getCurrentUserName();
             userService.update(request, username);
             return new ResponseEntity<>("Updated successful", HttpStatus.OK);
@@ -49,7 +49,7 @@ public class UserController {
     @GetMapping("/doctors")
     public ResponseEntity<?> getDoctors() {
         try {
-            log.info("/doctors ---- : ");
+            log.info("/doctors ---- ");
             List<User> doctors = userService.getDoctors();
             ModelMapper modelMapper = new ModelMapper();
             return new ResponseEntity<>(doctors.stream()
@@ -57,6 +57,18 @@ public class UserController {
                     .collect(Collectors.toList()), HttpStatus.OK);
         }  catch (Exception e) {
             log.error("/doctors error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/basic-info/{user_id}")
+    public ResponseEntity<?> getBasicInfo(@PathVariable String user_id) {
+        try {
+            log.info("/basic-info ---- ");
+            Object result = userService.getBasicInfo(user_id);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }  catch (Exception e) {
+            log.error("/basic-info error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

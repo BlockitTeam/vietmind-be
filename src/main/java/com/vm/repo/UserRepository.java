@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface UserRepository extends CrudRepository<User, UUID> {
@@ -24,4 +25,7 @@ public interface UserRepository extends CrudRepository<User, UUID> {
 			"LEFT JOIN Conversation c ON (u.id = c.doctorId OR u.id = c.userId) " +
 			"WHERE r.id = 1 AND (c.userId = :userId OR c.doctorId = :userId)")
 	List<Object[]> getDoctorsWithConversationsByUserId(@Param("userId") UUID userId);
+
+	@Query("SELECT new map(u.birthYear as birthYear, u.gender as gender) FROM User u WHERE u.id = :userId")
+	Map<String, Object> getBasicInfo(@Param("userId") UUID userId);
 }
