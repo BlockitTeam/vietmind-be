@@ -21,8 +21,8 @@ public interface ConversationRepository extends CrudRepository<Conversation, Int
 
     @Query("SELECT c, m, sender.firstName, sender.lastName, receiver.firstName, receiver.lastName FROM Conversation c " +
             "LEFT JOIN Message m ON c.conversationId = m.conversationId " +
-            "LEFT JOIN User sender ON sender.id = UNHEX(REPLACE(m.senderId, '-', '')) " +
-            "LEFT JOIN User receiver ON receiver.id = UNHEX(REPLACE(m.receiverId, '-', '')) " +
+            "LEFT JOIN User sender ON sender.id = UNHEX(REPLACE(c.userId, '-', '')) " +
+            "LEFT JOIN User receiver ON receiver.id = UNHEX(REPLACE(c.doctorId, '-', '')) " +
             "WHERE (c.userId = :userId OR c.doctorId = :userId) " +
             "AND m.createdAt = (SELECT MAX(m2.createdAt) FROM Message m2 WHERE m2.conversationId = c.conversationId)")
     List<Object[]> findAllConversationsWithLastMessageByUserId(@Param("userId") String userId);
