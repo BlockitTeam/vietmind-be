@@ -16,7 +16,7 @@ public class AppointmentController {
     private final Logger log = LoggerFactory.getLogger(AppointmentController.class);
     private final AppointmentService appointmentService;
 
-    @PostMapping("/")
+    @PostMapping("")
     public ResponseEntity<?> createAppointment(@RequestBody Appointment appointment) {
         try {
             log.info("/appointments create ---- ");
@@ -27,7 +27,7 @@ public class AppointmentController {
         }
     }
 
-    @PutMapping("/")
+    @PutMapping("")
     public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment) {
         try {
             log.info("/appointments update ---- ");
