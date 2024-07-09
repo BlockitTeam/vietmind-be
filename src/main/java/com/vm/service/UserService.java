@@ -51,29 +51,26 @@ public class UserService {
 	}
 
 	public User getCurrentUser(String username) {
-		User existUser = userRepo.getUserByUsername(username);
-		if (existUser != null)
-			existUser.setPassword(null);
-		return existUser;
+		return userRepo.getUserByUsername(username);
 	}
 
 	public List<User> getDoctors() {
 		return userRepo.getDoctors();
 	}
 
-	public List<UserDTO> getDoctorsWithConversations(UUID userId) {
-		List<Object[]> results = userRepo.getDoctorsWithConversationsByUserId(userId);
-
-		return results.stream()
-				.map(result -> {
-					User user = (User) result[0];
-					Integer conversationId = (Integer) result[1];
-					UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-					userDTO.setConversationId(conversationId);
-					return userDTO;
-				})
-				.collect(Collectors.toList());
-	}
+//	public List<UserDTO> getDoctorsWithConversations(UUID userId) {
+//		List<Object[]> results = userRepo.getDoctorsWithConversationsByUserId(userId);
+//
+//		return results.stream()
+//				.map(result -> {
+//					User user = (User) result[0];
+//					Integer conversationId = (Integer) result[1];
+//					UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+//					userDTO.setConversationId(conversationId);
+//					return userDTO;
+//				})
+//				.collect(Collectors.toList());
+//	}
 
 	public User update(UserRequest request, String userName) {
 		User originUser = userRepo.getUserByUsername(userName);
