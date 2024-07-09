@@ -82,6 +82,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/v1/auth", "/api/v1/auth/login", "/api/v1/auth/logout").permitAll() // Allow access to /api/auth/token without authentication
+//                .antMatchers("/api/v1/user/**").hasRole("DOCTOR")
                 .anyRequest().authenticated()
                 .and()
                 .logout()
