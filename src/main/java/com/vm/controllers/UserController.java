@@ -29,7 +29,6 @@ public class UserController {
     private ModelMapper modelMapper;
 
     @GetMapping("/current-user")
-    @PreAuthorize("hasRole('ROLE_DOCTOR')")
     public ResponseEntity<?> getCurrentUser() {
         try {
             log.info("/current-user ---- ");
