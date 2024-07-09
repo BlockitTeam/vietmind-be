@@ -15,8 +15,7 @@ import java.util.List;
 @RequestMapping("/api/v1/question")
 @RequiredArgsConstructor
 public class QuestionController {
-
-    private final Logger log = LoggerFactory.getLogger(QuestionController.class);
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final QuestionService service;
 
     @GetMapping("")

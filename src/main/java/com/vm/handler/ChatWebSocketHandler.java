@@ -97,14 +97,15 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
                 //Stored message
                 Message request = Message.builder().senderId(userId).receiverId(targetUserId)
-                        .encryptedMessage(msg).conversationId(conversationId).isRead(true).build();
-                messageService.saveMessage(request);
+                        .encryptedMessage(msg).conversationId(conversationId).isRead(false).build();
+                Message newMess = messageService.saveMessage(request);
                 WebSocketSession targetSession = sessions.get(targetUserId);
 
                 if (targetSession != null && targetSession.isOpen()) {
                     //Send message to targetUserId
                     SocketResponse res = SocketResponse.builder().fromUserId(userId)
-                            .conversationId(conversationId).message(msg).type(type).build();
+                            .conversationId(conversationId).message(msg).messageId(newMess.getMessageId())
+                            .createAt(newMess.getCreatedAt()).type(type).build();
                     targetSession.sendMessage(new TextMessage(res.toString()));
                 } else {
                     logger.info("Target user {} is not connected.", targetUserId);

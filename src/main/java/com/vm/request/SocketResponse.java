@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -13,7 +15,9 @@ public class SocketResponse {
     private String fromUserId;
     private int conversationId;
     private String message;
+    private int messageId;
     private String type;
+    private LocalDateTime createAt;
 
     @Override
     public String toString() {
