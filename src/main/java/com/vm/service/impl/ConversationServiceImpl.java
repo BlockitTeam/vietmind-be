@@ -36,6 +36,10 @@ public class ConversationServiceImpl implements ConversationService {
             String receiverFullName = receiverLastName + " " + receiverFirstName;
             conversations.add(new ConversationWithLastMessageDTO(conversation, lastMessage, senderFullName, receiverFullName));
         }
+        // Sort list base on createdAt of Message newest
+        conversations.sort((dto1, dto2) -> dto2.getLastMessage().getCreatedAt()
+                .compareTo(dto1.getLastMessage().getCreatedAt()));
+
         return conversations;
     }
 
