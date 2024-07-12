@@ -21,7 +21,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public Message saveMessage(Message request) {
         try {
-            messageRepo.save(request);
+            return messageRepo.save(request);
         } catch (Exception ex) {
             System.out.println("Error save message: " + ex.getMessage());
         }
