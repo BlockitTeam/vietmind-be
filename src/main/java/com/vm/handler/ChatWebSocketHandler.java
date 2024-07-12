@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vm.model.Conversation;
 import com.vm.model.Message;
+import com.vm.request.AppointmentResponse;
 import com.vm.request.SocketResponse;
 import com.vm.service.ConversationService;
 import com.vm.service.MessageService;
@@ -110,7 +111,17 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 } else {
                     logger.info("Target user {} is not connected.", targetUserId);
                 }
-            } else {
+            } else if ("appointment".equals(type)) {
+                // Handle send appointment information
+                WebSocketSession targetSession = sessions.get(targetUserId);
+                if (targetSession != null) {
+                    AppointmentResponse res = AppointmentResponse.builder().fromUserId(userId)
+                            .conversationId(conversationId).type(type).appointmentId(jsonMessage.get("appointmentId").asInt())
+                            .status(jsonMessage.get("appointmentId").asText()).build();
+                    targetSession.sendMessage(new TextMessage(res.toString()));
+                }
+
+            }else {
                 // Handle typing and unTyping notification
                 WebSocketSession targetSession = sessions.get(targetUserId);
                 if (targetSession != null) {
