@@ -12,7 +12,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     private AppointmentRepository appointmentRepository;
 
     @Override
-    public Appointment createAppointment(Appointment appointment) {
+    public Appointment createAppointment(Appointment appointment) throws Exception {
+        Integer appointmentId = appointment.getAppointmentId();
+        if (appointmentId == null) {
+            Integer conversationId = appointment.getConversationId();
+            Appointment appointmentExist = getAppointmentByConversationId(conversationId);
+            if (appointmentExist != null)
+                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
+        }
         return appointmentRepository.save(appointment);
     }
 
