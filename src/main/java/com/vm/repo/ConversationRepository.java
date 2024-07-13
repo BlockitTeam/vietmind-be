@@ -13,7 +13,8 @@ public interface ConversationRepository extends CrudRepository<Conversation, Int
     @Query("SELECT u FROM Response u WHERE u.surveyId = :survey_id")
     public List<Conversation> getResponseBySurveyId(@Param("survey_id") Long survey_id);
 
-    @Query("SELECT u FROM Conversation u WHERE (u.userId = :user_id AND u.doctorId = :doctor_id) OR (u.userId = :doctor_id AND u.doctorId = :user_id)")
+    @Query("SELECT u FROM Conversation u WHERE ((u.userId = :user_id AND u.doctorId = :doctor_id) OR (u.userId = :doctor_id AND u.doctorId = :user_id)) " +
+            "AND u.isFinished = false ")
     public Conversation getConversationByUserIdAndDoctorId(@Param("user_id") String user_id, @Param("doctor_id") String doctor_id);
 
     @Query("SELECT u FROM Conversation u WHERE u.userId = :person_id OR u.doctorId = :person_id")
