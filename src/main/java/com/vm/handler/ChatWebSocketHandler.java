@@ -121,7 +121,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     targetSession.sendMessage(new TextMessage(res.toString()));
                 }
 
-            }else {
+            } else {
                 // Handle typing and unTyping notification
                 WebSocketSession targetSession = sessions.get(targetUserId);
                 if (targetSession != null) {

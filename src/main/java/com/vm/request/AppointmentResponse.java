@@ -16,14 +16,14 @@ public class AppointmentResponse {
     private int appointmentId;
     private String status;
 
+    @SneakyThrows
     @Override
     public String toString() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            // Handle the exception as needed, possibly returning a fallback value
-            return "{\"error\":\"Unable to convert to JSON\"}";
+        } catch (JsonProcessingException ex) {
+            throw ex;
         }
     }
 }

@@ -19,14 +19,15 @@ public class SocketResponse {
     private String type;
     private LocalDateTime createAt;
 
+    @SneakyThrows
     @Override
     public String toString() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException ex) {
             // Handle the exception as needed, possibly returning a fallback value
-            return "{\"error\":\"Unable to convert to JSON\"}";
+            throw ex;
         }
     }
 }

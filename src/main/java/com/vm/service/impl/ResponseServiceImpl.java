@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,12 +62,26 @@ public class ResponseServiceImpl implements ResponseService {
 						Collectors.summingInt(map -> (Integer) map.get("score"))
 				));
 
-		// Convert to desired format
-		return aggregatedScores.entrySet().stream()
+		// Remove "Other" and sort by value in descending order
+		Map<String, Integer> sortedScores = aggregatedScores.entrySet().stream()
+				.filter(entry -> !entry.getKey().equals("Other"))
+				.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
 				.collect(Collectors.toMap(
 						Map.Entry::getKey,
-						entry -> entry.getValue() + "/" + MAX_SCORE
+						Map.Entry::getValue,
+						(e1, e2) -> e1, // If there are duplicates, keep the existing entry
+						LinkedHashMap::new // Preserve the order of insertion
 				));
+
+		// Convert to desired format and maintain order
+		Map<String, String> formattedScores = sortedScores.entrySet().stream()
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						entry -> entry.getValue() + "/" + MAX_SCORE,
+						(e1, e2) -> e1,
+						LinkedHashMap::new
+				));
+		return formattedScores;
 	}
 
 	@Override
