@@ -19,7 +19,7 @@ public class QuestionController {
     private final QuestionService service;
 
     @GetMapping("")
-    public ResponseEntity<?> getQuestions() {
+    public ResponseEntity<?> getQuestionsOfGeneralSurvey() {
         try {
             log.info("/question get all ---- : ");
             List<QuestionObject> questions = service.getQuestionBySurveyId(1L);
@@ -38,6 +38,18 @@ public class QuestionController {
             return ResponseEntity.ok(questions);
         }   catch (Exception e) {
             log.error("/question get by id  error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getQuestionsOfStressSurvey")
+    public ResponseEntity<?> getQuestionsOfStressSurvey() {
+        try {
+            log.info("/getQuestionsOfStressSurvey get all ---- : ");
+            List<QuestionObject> questions = service.getQuestionBySurveyId(2L);
+            return ResponseEntity.ok(questions);
+        }  catch (Exception e) {
+            log.error("/getQuestionsOfStressSurvey get all error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
