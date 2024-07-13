@@ -3,6 +3,7 @@ package com.vm.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class SocketResponse {
     @Override
     public String toString() {
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // Register the module
         try {
             return objectMapper.writeValueAsString(this);
         } catch (JsonProcessingException ex) {
