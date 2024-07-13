@@ -117,7 +117,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 if (targetSession != null) {
                     AppointmentResponse res = AppointmentResponse.builder().fromUserId(userId)
                             .conversationId(conversationId).type(type).appointmentId(jsonMessage.get("appointmentId").asInt())
-                            .status(jsonMessage.get("appointmentId").asText()).build();
+                            .status(jsonMessage.get("status").asText()).build();
                     targetSession.sendMessage(new TextMessage(res.toString()));
                 }
 
