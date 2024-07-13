@@ -1,6 +1,7 @@
 package com.vm.config;
 
 import com.vm.handler.CustomAccessDeniedHandler;
+import com.vm.handler.CustomAuthenticationEntryPoint;
 import com.vm.handler.CustomAuthenticationSuccessHandler;
 import com.vm.service.CustomOAuth2UserService;
 import com.vm.service.UserService;
@@ -17,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -40,6 +42,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private CustomAccessDeniedHandler accessDeniedHandler;
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint();
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -94,6 +101,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler) // Set custom access denied handler
+                .authenticationEntryPoint(authenticationEntryPoint()); // Set custom authentication entry point
         ;
     }
 
