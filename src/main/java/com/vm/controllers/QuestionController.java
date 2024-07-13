@@ -53,4 +53,16 @@ public class QuestionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/getQuestionsOfUnrestSurvey")
+    public ResponseEntity<?> getQuestionsOfUnrestSurvey() {
+        try {
+            log.info("/getQuestionsOfUnrestSurvey get all ---- : ");
+            List<QuestionObject> questions = service.getQuestionBySurveyId(3L);
+            return ResponseEntity.ok(questions);
+        }  catch (Exception e) {
+            log.error("/getQuestionsOfUnrestSurvey get all error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }
