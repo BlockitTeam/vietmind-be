@@ -1,5 +1,6 @@
 package com.vm.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
@@ -17,6 +18,8 @@ public class SocketResponse {
     private String message;
     private int messageId;
     private String type;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createAt;
 
     @SneakyThrows
