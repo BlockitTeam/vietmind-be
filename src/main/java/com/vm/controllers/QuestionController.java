@@ -78,4 +78,28 @@ public class QuestionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/getQuestionsOfDepressionSurvey")
+    public ResponseEntity<?> getQuestionsOfDepressionSurvey() {
+        try {
+            log.info("/getQuestionsOfDepressionSurvey get all ---- : ");
+            List<QuestionObject> questions = service.getQuestionBySurveyId(5L);
+            return ResponseEntity.ok(questions);
+        }  catch (Exception e) {
+            log.error("/getQuestionsOfDepressionSurvey get all error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getQuestionsOfPTSDSurvey")
+    public ResponseEntity<?> getQuestionsOfPTSDSurvey() {
+        try {
+            log.info("/getQuestionsOfPTSDSurvey get all ---- : ");
+            List<QuestionObject> questions = service.getQuestionBySurveyId(6L);
+            return ResponseEntity.ok(questions);
+        }  catch (Exception e) {
+            log.error("/getQuestionsOfPTSDSurvey get all error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }
