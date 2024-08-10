@@ -1,5 +1,6 @@
 package com.vm.controllers;
 
+import com.vm.request.NewQuestionObject;
 import com.vm.request.QuestionObject;
 import com.vm.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +63,18 @@ public class QuestionController {
             return ResponseEntity.ok(questions);
         }  catch (Exception e) {
             log.error("/getQuestionsOfUnrestSurvey get all error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getQuestionsOfSleepSurvey")
+    public ResponseEntity<?> getQuestionsOfSleepSurvey() {
+        try {
+            log.info("/getQuestionsOfSleepSurvey get all ---- : ");
+            List<NewQuestionObject> questions = service.getQuestionWithNewFormatBySurveyId(4L);
+            return ResponseEntity.ok(questions);
+        }  catch (Exception e) {
+            log.error("/getQuestionsOfSleepSurvey get all error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

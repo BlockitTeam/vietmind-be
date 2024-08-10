@@ -30,6 +30,12 @@ public class Question {
     @Column(name = "question_type_id")
     private Integer questionTypeId;
 
+    @Column(name = "response_format")
+    private String responseFormat;
+
+    @Column(name = "parent_question_id")
+    private Long parentQuestionId;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
