@@ -42,7 +42,6 @@ public class ResponseServiceImpl implements ResponseService {
 		List<Response> responses = new ArrayList<>();
 		for (QuestionObject ele : request) {
 			Response response = new Response();
-
 			response.setSurveyId(ele.getSurveyId());
 			Object answer = ele.getAnswer();
 			if (answer instanceof Number)

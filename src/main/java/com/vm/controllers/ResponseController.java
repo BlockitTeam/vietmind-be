@@ -34,12 +34,23 @@ public class ResponseController {
         }
     }
 
+    @PostMapping("saveResponseSurveyDetail")
+    public ResponseEntity<?> saveResponseSurveyDetail(@RequestBody List<QuestionObject> request) {
+        try {
+            log.info("/saveResponseSurveyDetail save ---- : ");
+            responseService.saveResponse(request);
+            return new ResponseEntity<>("Save response successfully", HttpStatus.CREATED);
+        } catch (Exception e) {
+            log.error("/saveResponseSurveyDetail failed to save response", e);
+            return new ResponseEntity<>("Failed to save response", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PostMapping("")
-    public ResponseEntity<?> saveResponseForGeneralSurvey(@RequestBody List<QuestionObject> request) {
+    public ResponseEntity<?> saveResponse(@RequestBody List<QuestionObject> request) {
         try {
             log.info("/response save ---- : ");
             responseService.saveResponse(request);
-            userService.markCompleteGeneralSurvey(true);
             return new ResponseEntity<>("Save response successfully", HttpStatus.CREATED);
         } catch (Exception e) {
             log.error("/response failed to save response", e);
