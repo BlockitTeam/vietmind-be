@@ -84,6 +84,13 @@ public class ResponseServiceImpl implements ResponseService {
 	}
 
 	@Override
+	public Map<String, String> getResultDetail(String userId) {
+//		List<Response> response = responseRepo.getResponseBySurveyId(survey_id);
+
+		return null;
+	}
+
+	@Override
 	public void deleteResponses(Long survey_id) {
 		responseRepo.deleteAllByEmployeeIdIn(survey_id);
 	}

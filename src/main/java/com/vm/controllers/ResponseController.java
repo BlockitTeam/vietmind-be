@@ -70,6 +70,18 @@ public class ResponseController {
         }
     }
 
+    @GetMapping("resultDetail")
+    public ResponseEntity<?> getResultDetail() {
+        try {
+            log.info("/resultDetail ---- : ");
+            Map<String, String> result = responseService.getResult(userService.getStringCurrentUserId());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("/resultDetail error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @GetMapping("result/{user_id}")
     public ResponseEntity<?> getResultByUserId(@PathVariable String user_id) {
         try {
