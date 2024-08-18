@@ -29,6 +29,9 @@ public class User {
 	private boolean enabled = false;
 
 	private boolean surveyCompleted = false;
+
+	@Column(name = "survey_detail")
+	private Integer surveyDetail;
 	
 	@Enumerated(EnumType.STRING)
 	private Provider provider;
