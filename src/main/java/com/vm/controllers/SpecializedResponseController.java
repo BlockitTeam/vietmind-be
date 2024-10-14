@@ -1,7 +1,6 @@
 package com.vm.controllers;
 
-import com.vm.model.SpecializedResponse;
-import com.vm.request.QuestionObject;
+import com.vm.request.NewQuestionObject;
 import com.vm.service.UserService;
 import com.vm.service.impl.SpecializedResponseService;
 import org.slf4j.Logger;
@@ -16,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/specialized-responses")
 public class SpecializedResponseController {
-    private final Logger log = LoggerFactory.getLogger(ResponseController.class);
+    private final Logger log = LoggerFactory.getLogger(SpecializedResponseController.class);
 
     @Autowired
     private SpecializedResponseService specializedResponseService;
@@ -24,19 +23,11 @@ public class SpecializedResponseController {
     @Autowired
     private UserService userService;
 
-    @PostMapping
-    public ResponseEntity<SpecializedResponse> createSpecializedResponse(@RequestParam String userId,
-                                                                         @RequestParam int surveyId,
-                                                                         @RequestParam Long optionId) {
-        SpecializedResponse response = specializedResponseService.saveSpecializedResponse(userId, surveyId, optionId);
-        return ResponseEntity.ok(response);
-    }
-
     @GetMapping("/latestResultDetail")
-    public ResponseEntity<?> getLatestSpecializedResponse(@RequestParam String userId) {
+    public ResponseEntity<?> getLatestSpecializedResponse() {
         try {
             log.info("/api/v1/specialized-responses/latestResultDetail ---- : ");
-            List<QuestionObject> responses = specializedResponseService.getLatestSpecializedResponse(userId);
+            List<NewQuestionObject> responses = specializedResponseService.getLatestSpecializedResponse(userService.getStringCurrentUserId());
             if (responses.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
@@ -45,11 +36,25 @@ public class SpecializedResponseController {
             log.error("/api/v1/specialized-responses/latestResultDetail error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+    }
 
+    @GetMapping("/latestResultDetailByUserId")
+    public ResponseEntity<?> getLatestSpecializedResponseByUserId(@RequestParam String userId) {
+        try {
+            log.info("/api/v1/specialized-responses/latestResultDetailByUserId ---- : ");
+            List<NewQuestionObject> responses = specializedResponseService.getLatestSpecializedResponse(userId);
+            if (responses.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            log.error("/api/v1/specialized-responses/latestResultDetailByUserId error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @PostMapping("save")
-    public ResponseEntity<?> saveSpecializedResponse(@RequestBody List<QuestionObject> request) {
+    public ResponseEntity<?> saveSpecializedResponse(@RequestBody List<NewQuestionObject> request) {
         try {
             log.info("/api/v1/specialized-responses/save ---- : ");
             specializedResponseService.saveResponse(request);

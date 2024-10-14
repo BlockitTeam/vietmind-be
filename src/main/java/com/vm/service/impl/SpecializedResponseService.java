@@ -1,11 +1,10 @@
 package com.vm.service.impl;
 
-import com.vm.model.Option;
 import com.vm.model.SpecializedResponse;
 import com.vm.model.User;
 import com.vm.repo.SpecializedResponseRepository;
 import com.vm.repo.UserRepository;
-import com.vm.request.QuestionObject;
+import com.vm.request.NewQuestionObject;
 import com.vm.service.QuestionService;
 import com.vm.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class SpecializedResponseService {
@@ -35,7 +31,7 @@ public class SpecializedResponseService {
     private QuestionService questionService;
 
     @Transactional
-    public List<SpecializedResponse> saveResponse(List<QuestionObject> request) {
+    public List<SpecializedResponse> saveResponse(List<NewQuestionObject> request) {
         List<SpecializedResponse> responses = new ArrayList<>();
         User user = userRepository.findById(userService.getCurrentUUID())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -46,13 +42,25 @@ public class SpecializedResponseService {
         }
         int surveyId = 0;
 
-        for (QuestionObject ele : request) {
+        for (NewQuestionObject ele : request) {
             SpecializedResponse response = new SpecializedResponse();
             surveyId = ele.getSurveyId();
             response.setSurveyId(surveyId);
-            Object answer = ele.getAnswer();
-            if (answer instanceof Number)
-                response.setOptionId(((Number) answer).longValue());
+            response.setQuestionId(ele.getQuestionId());
+
+            String typeResponse = ele.getResponseFormat();
+            if (typeResponse != null && "text_input".equals(typeResponse)) {
+                response.setResponseText(ele.getAnswer().toString());
+                response.setResponseFormat(typeResponse);
+            } else if (typeResponse != null && "parent_question".equals(typeResponse)) {
+                continue;
+            } else {
+                Object answer = ele.getAnswer();
+                if (answer instanceof Number)
+                    response.setOptionId(((Number) answer).longValue());
+                response.setResponseFormat(typeResponse);
+            }
+
             response.setUserId(userService.getStringCurrentUserId());
             response.setVersion(newVersion);
             responses.add(response);
@@ -96,41 +104,29 @@ public class SpecializedResponseService {
         return savedResponse;
     }
 
-    public List<QuestionObject> getLatestSpecializedResponse(String userId) {
+    public List<NewQuestionObject> getLatestSpecializedResponse(String userId) {
         User user = userRepository.findById(userService.getCurrentUUID())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         int surveyId = user.getSurveyDetailId();
-        List<QuestionObject> questions = questionService.getQuestionBySurveyId(surveyId);
+        List<NewQuestionObject> questions = questionService.getQuestionWithNewFormatBySurveyId(surveyId);
         List<SpecializedResponse> result = specializedResponseRepository.findAllByUserIdAndSurveyIdWithMaxVersion(userId, user.getSurveyDetailId());
 
         // Gán phản hồi vào các câu hỏi
-        assignResponsesToQuestions(questions, result);
-        return questions;
-    }
-
-    public void assignResponsesToQuestions(List<QuestionObject> questions, List<SpecializedResponse> responses) {
-        // Tạo một Map từ optionId đến SpecializedResponse để tăng hiệu suất tìm kiếm
-        Map<Long, SpecializedResponse> optionIdToResponseMap = responses.stream()
-                .collect(Collectors.toMap(SpecializedResponse::getOptionId, Function.identity()));
-
-        for (QuestionObject question : questions) {
-            List<Long> selectedOptionIds = new ArrayList<>();
-            for (Option option : question.getOptions()) {
-                SpecializedResponse response = optionIdToResponseMap.get(option.getOptionId());
-                if (response != null) {
-                    selectedOptionIds.add(option.getOptionId());
-                }
-            }
-
-            if (!selectedOptionIds.isEmpty()) {
-                if (question.getQuestionTypeId() == 1) { // Single choice
-                    question.setAnswer(selectedOptionIds.get(0));
-                } else if (question.getQuestionTypeId() == 2) { // Multiple choice
-                    question.setAnswer(selectedOptionIds);
+        for (NewQuestionObject question : questions) {
+            // Lọc danh sách SpecializedResponse theo questionId và surveyId tương ứng
+            for (SpecializedResponse response : result) {
+                if (response.getQuestionId().equals(question.getQuestionId())
+                        && response.getSurveyId().equals(question.getSurveyId())) {
+                    // Kiểm tra nếu có Option tương ứng trong question thì set giá trị
+                    question.getOptions().stream()
+                            .filter(option -> option.getOptionId().equals(response.getOptionId()))
+                            .findFirst()
+                            .ifPresent(option -> question.setAnswer(option.getOptionId()));
                 }
             }
         }
+        return questions;
     }
 }
 
