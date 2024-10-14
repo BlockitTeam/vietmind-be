@@ -23,7 +23,7 @@ public class QuestionController {
     public ResponseEntity<?> getQuestionsOfGeneralSurvey() {
         try {
             log.info("/question get all ---- : ");
-            List<QuestionObject> questions = service.getQuestionBySurveyId(1L);
+            List<QuestionObject> questions = service.getQuestionBySurveyId(1);
             return ResponseEntity.ok(questions);
         }  catch (Exception e) {
             log.error("/question get all error: {}", e.getMessage(), e);
@@ -47,7 +47,7 @@ public class QuestionController {
     public ResponseEntity<?> getQuestionsOfStressSurvey() {
         try {
             log.info("/getQuestionsOfStressSurvey get all ---- : ");
-            List<QuestionObject> questions = service.getQuestionBySurveyId(2L);
+            List<QuestionObject> questions = service.getQuestionBySurveyId(2);
             return ResponseEntity.ok(questions);
         }  catch (Exception e) {
             log.error("/getQuestionsOfStressSurvey get all error: {}", e.getMessage(), e);
@@ -59,7 +59,7 @@ public class QuestionController {
     public ResponseEntity<?> getQuestionsOfUnrestSurvey() {
         try {
             log.info("/getQuestionsOfUnrestSurvey get all ---- : ");
-            List<QuestionObject> questions = service.getQuestionBySurveyId(3L);
+            List<QuestionObject> questions = service.getQuestionBySurveyId(3);
             return ResponseEntity.ok(questions);
         }  catch (Exception e) {
             log.error("/getQuestionsOfUnrestSurvey get all error: {}", e.getMessage(), e);
@@ -71,7 +71,7 @@ public class QuestionController {
     public ResponseEntity<?> getQuestionsOfSleepSurvey() {
         try {
             log.info("/getQuestionsOfSleepSurvey get all ---- : ");
-            List<NewQuestionObject> questions = service.getQuestionWithNewFormatBySurveyId(4L);
+            List<NewQuestionObject> questions = service.getQuestionWithNewFormatBySurveyId(4);
             return ResponseEntity.ok(questions);
         }  catch (Exception e) {
             log.error("/getQuestionsOfSleepSurvey get all error: {}", e.getMessage(), e);
@@ -83,7 +83,7 @@ public class QuestionController {
     public ResponseEntity<?> getQuestionsOfDepressionSurvey() {
         try {
             log.info("/getQuestionsOfDepressionSurvey get all ---- : ");
-            List<QuestionObject> questions = service.getQuestionBySurveyId(5L);
+            List<QuestionObject> questions = service.getQuestionBySurveyId(5);
             return ResponseEntity.ok(questions);
         }  catch (Exception e) {
             log.error("/getQuestionsOfDepressionSurvey get all error: {}", e.getMessage(), e);
@@ -95,7 +95,7 @@ public class QuestionController {
     public ResponseEntity<?> getQuestionsOfPTSDSurvey() {
         try {
             log.info("/getQuestionsOfPTSDSurvey get all ---- : ");
-            List<QuestionObject> questions = service.getQuestionBySurveyId(6L);
+            List<QuestionObject> questions = service.getQuestionBySurveyId(6);
             return ResponseEntity.ok(questions);
         }  catch (Exception e) {
             log.error("/getQuestionsOfPTSDSurvey get all error: {}", e.getMessage(), e);

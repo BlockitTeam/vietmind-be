@@ -52,6 +52,7 @@ public class ResponseServiceImpl implements ResponseService {
 		return (List<Response>) responseRepo.saveAll(responses);
 	}
 
+
 	@Override
 	public Map<String, String> getResult(String userId) {
 		List<Map<String, Object>> result = responseRepo.getAggregatedResponses(userId);

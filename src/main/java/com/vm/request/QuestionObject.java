@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class QuestionObject {
     private Long questionId;
-    private Long surveyId;
+    private Integer surveyId;
     private String questionText;
     private Integer questionTypeId;
     private List<Option> options;

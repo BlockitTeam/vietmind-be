@@ -22,7 +22,7 @@ public class Question {
     private Long questionId;
 
     @Column(name = "survey_id")
-    private Long surveyId;
+    private Integer surveyId;
 
     @Column(name = "question_text")
     private String questionText;
@@ -32,6 +32,9 @@ public class Question {
 
     @Column(name = "response_format")
     private String responseFormat;
+
+    @Column(name = "text_input")
+    private String textInput;
 
     @Column(name = "parent_question_id")
     private Long parentQuestionId;

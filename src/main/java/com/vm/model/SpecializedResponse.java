@@ -4,48 +4,48 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "responses")
+@Table(name = "specialized_responses")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Response {
+public class SpecializedResponse {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "response_id")
     private Long responseId;
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "question_id")
+    private Long questionId;
+
+    @Column(name = "response_format")
+    private String responseFormat;
 
     @Column(name = "option_id", nullable = false)
     private Long optionId;
 
+    @Column(name = "response_text")
+    private String responseText;
+
     @Column(name = "survey_id", nullable = false)
     private Integer surveyId;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+    @Column(name = "version", nullable = false)
+    private Integer version;
 
-    @Column(name = "updated_at")
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    @Column(name = "user_id", nullable = false)
+    private String userId;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }

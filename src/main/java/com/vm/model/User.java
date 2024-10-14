@@ -30,8 +30,11 @@ public class User {
 
 	private boolean surveyCompleted = false;
 
-	@Column(name = "survey_detail")
-	private Integer surveyDetail;
+	@Column(name = "survey_detail_id")
+	private Integer surveyDetailId;
+
+	@Column(name = "latest_specialized_version")
+	private Integer latestSpecializedVersion;
 	
 	@Enumerated(EnumType.STRING)
 	private Provider provider;

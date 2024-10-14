@@ -28,7 +28,7 @@ public class QuestionServiceImpl implements QuestionService {
 	private ModelMapper modelMapper;
 
     @Override
-	public List<QuestionObject> getQuestionBySurveyId(Long survey_id) {
+	public List<QuestionObject> getQuestionBySurveyId(Integer survey_id) {
 		List<Question> questions = questionRepo.getQuestionBySurveyId(survey_id);;
 		List<QuestionObject> result = new ArrayList<>();
 		for (Question ele : questions) {
@@ -42,7 +42,7 @@ public class QuestionServiceImpl implements QuestionService {
 	}
 
 	@Override
-	public List<NewQuestionObject> getQuestionWithNewFormatBySurveyId(Long survey_id) {
+	public List<NewQuestionObject> getQuestionWithNewFormatBySurveyId(Integer survey_id) {
 		// Lấy tất cả các câu hỏi theo survey_id
 		List<Question> questions = questionRepo.getQuestionBySurveyId(survey_id);
 
