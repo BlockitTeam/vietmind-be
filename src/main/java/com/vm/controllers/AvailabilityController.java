@@ -50,7 +50,7 @@ public class AvailabilityController {
      * @return Danh sách Availability
      */
     @GetMapping("")
-    public ResponseEntity<?> getAvailabilities() {
+    public ResponseEntity<?> getAvailabilitiesCurrentUser() {
         try {
             log.info("/api/v1/availabilities get --- ");
             List<Availability> availabilities = availabilityService.getAvailabilities(userService.getStringCurrentUserId());
@@ -83,8 +83,7 @@ public class AvailabilityController {
     }
 
     @GetMapping("/available")
-    public ResponseEntity<List<Availability>> getAvailableShifts(
-            @RequestParam String userId,
+    public ResponseEntity<List<Availability>> getAvailableShiftsByUserAndDate(@RequestParam String userId,
             @RequestParam String date) { // date định dạng "yyyy-MM-dd"
 
         // Chuyển đổi date sang dayOfWeek
@@ -111,5 +110,4 @@ public class AvailabilityController {
             return ResponseEntity.badRequest().body(null);
         }
     }
-
 }
