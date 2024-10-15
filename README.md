@@ -18,3 +18,35 @@ BODY
 {"token":"abcxyz", "provider":"facebook"}
 
 {"token":"abcxyz", "provider":"google"}
+
+
+
+
+BODY POST "http://localhost:9001/api/v1/availabilities"
+
+[
+{
+"dayOfWeek": 1,
+"shiftNumber": 1,
+"startTime": "10:00",
+"endTime": "12:00"
+},
+{
+"dayOfWeek": 1,
+"shiftNumber": 2,
+"startTime": "17:30",
+"endTime": "21:00"
+},
+{
+"dayOfWeek": 2,
+"shiftNumber": 1,
+"startTime": "10:00",
+"endTime": "12:00"
+},
+{
+"dayOfWeek": 2,
+"shiftNumber": 2,
+"startTime": "17:30",
+"endTime": "21:00"
+}
+]
