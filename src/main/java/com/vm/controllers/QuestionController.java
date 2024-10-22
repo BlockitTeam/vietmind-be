@@ -43,6 +43,18 @@ public class QuestionController {
         }
     }
 
+    @GetMapping("/getQuestionsBySurveyId/{id}")
+    public ResponseEntity<?> getQuestionsBySurveyId(@PathVariable Integer id) {
+        try {
+            log.info("/getQuestionsBySurveyId get all ---- : ");
+            List<NewQuestionObject> questions = service.getQuestionWithNewFormatBySurveyId(id);
+            return ResponseEntity.ok(questions);
+        }  catch (Exception e) {
+            log.error("/getQuestionsBySurveyId get all error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/getQuestionsOfStressSurvey")
     public ResponseEntity<?> getQuestionsOfStressSurvey() {
         try {

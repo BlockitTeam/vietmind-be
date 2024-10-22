@@ -28,6 +28,9 @@ public class Survey {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "priority")
+    private Integer priority;
+
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;

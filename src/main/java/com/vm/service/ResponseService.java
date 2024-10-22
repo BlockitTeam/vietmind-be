@@ -10,7 +10,7 @@ public interface ResponseService {
 //	public List<QuestionObject> getQuestionBySurveyId(Long survey_id);
 //	public QuestionObject getQuestionById(Long question_id);
 	public List<Response> getResponseBySurveyId(Long survey_id);
-	public List<Response> saveResponse(List<QuestionObject> request) ;
+	public void saveResponse(List<QuestionObject> request) ;
 	public Map<String, String> getResult(String userId);
 
 	public Map<String, String> getResultDetail(String userId);

@@ -1,7 +1,6 @@
 package com.vm.service;
 
 import com.vm.constant.Provider;
-import com.vm.dto.UserDTO;
 import com.vm.model.Role;
 import com.vm.model.User;
 import com.vm.repo.RoleRepository;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -131,5 +129,12 @@ public class UserService {
 			userInfo.put("age", age);
 		}
 		return userInfo;
+	}
+
+	public void markSurveyDetailId(int surveyId) {
+		UUID currentUserId = getCurrentUUID();
+		User user = userRepo.findById(currentUserId).get();
+		user.setSurveyDetailId(surveyId);
+		userRepo.save(user);
 	}
 }
