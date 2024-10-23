@@ -5,6 +5,7 @@ import com.vm.model.Role;
 import com.vm.model.User;
 import com.vm.repo.RoleRepository;
 import com.vm.repo.UserRepository;
+import com.vm.request.DoctorUserRequest;
 import com.vm.request.UserRequest;
 import com.vm.service.impl.CustomOAuth2User;
 import org.modelmapper.ModelMapper;
@@ -79,6 +80,19 @@ public class UserService {
 
 		//Enable user after finish complete form register
 		originUser.setEnabled(true);
+		return userRepo.save(originUser);
+	}
+
+	public User updateUserDoctor(DoctorUserRequest request, String userName) {
+		User originUser = userRepo.getUserByUsername(userName);
+		originUser.setFirstName(request.getFirstName());
+		originUser.setLastName(request.getLastName());
+		originUser.setBirthYear(request.getBirthYear());
+		originUser.setGender(request.getGender());
+		originUser.setWorkplace(request.getWorkplace());
+		originUser.setDegree(request.getDegree());
+		originUser.setSpecializations(request.getSpecializations());
+
 		return userRepo.save(originUser);
 	}
 

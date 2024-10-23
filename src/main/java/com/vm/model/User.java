@@ -52,6 +52,17 @@ public class User {
 	@Column(name = "gender")
 	private Gender gender;
 
+	@Column(name = "workplace")
+	private String workplace;
+
+	// Field mới: Bằng cấp
+	@Column(name = "degree")
+	private String degree;
+
+	// Field mới: Chuyên ngành (lưu danh sách survey_id dưới dạng chuỗi phân tách)
+	@Column(name = "specializations")
+	private String specializations; // e.g., "2,3,4" cho nhiều survey_id
+
 	@Getter
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(

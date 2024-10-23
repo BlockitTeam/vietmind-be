@@ -2,7 +2,9 @@ package com.vm.controllers;
 
 import com.vm.dto.DoctorDTO;
 import com.vm.dto.UserDTO;
+import com.vm.dto.UserDoctorDTO;
 import com.vm.model.User;
+import com.vm.request.DoctorUserRequest;
 import com.vm.request.UserRequest;
 import com.vm.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class UserController {
     private ModelMapper modelMapper;
 
     @GetMapping("/current-user")
-    public ResponseEntity<?> getCurrentUser() {
+    public ResponseEntity<?> getCurrentUserMobile() {
         try {
             log.info("/current-user ---- ");
             String username = userService.getCurrentUserName();
@@ -53,6 +54,33 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/current-user-doctor")
+    public ResponseEntity<?> getCurrentUserDoctor() {
+        try {
+            log.info("/current-user-doctor ---- ");
+            String username = userService.getCurrentUserName();
+            User user = userService.getCurrentUser(username);
+            return new ResponseEntity<>(modelMapper.map(user, UserDoctorDTO.class), HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("/current-user-doctor error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/doctor")
+    public ResponseEntity<?> updateUserDoctor(@RequestBody DoctorUserRequest request) throws Exception {
+        try {
+            log.info("/doctor/update user ---- ");
+            String username = userService.getCurrentUserName();
+            userService.updateUserDoctor(request, username);
+            return new ResponseEntity<>("Updated successful", HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("/doctor/update user error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/doctors")
     public ResponseEntity<?> getDoctors() {
         try {
