@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class SpecializedResponseService {
@@ -105,7 +106,7 @@ public class SpecializedResponseService {
     }
 
     public List<NewQuestionObject> getLatestSpecializedResponse(String userId) {
-        User user = userRepository.findById(userService.getCurrentUUID())
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         int surveyId = user.getSurveyDetailId();
