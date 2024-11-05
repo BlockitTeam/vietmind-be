@@ -54,7 +54,7 @@ public class AppointmentController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<?> getAppointmentByCurrentUser() {
         try {
             log.info("/appointments get appointment of current user ---- ");

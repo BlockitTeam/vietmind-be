@@ -15,7 +15,7 @@ public class AvailabilityDTO {
     private Integer shiftNumber;
     private LocalTime startTime;
     private LocalTime endTime;
-    private String dateStr;
+    private String date;
 
     // Constructors, Getters, Setters
     public AvailabilityDTO(Availability availability, String dateStr) {
@@ -25,6 +25,6 @@ public class AvailabilityDTO {
         this.shiftNumber = availability.getShiftNumber();
         this.startTime = availability.getStartTime();
         this.endTime = availability.getEndTime();
-        this.dateStr = dateStr;
+        this.date = dateStr;
     }
 }
