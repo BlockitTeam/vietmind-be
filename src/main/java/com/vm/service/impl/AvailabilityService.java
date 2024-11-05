@@ -1,5 +1,6 @@
 package com.vm.service.impl;
 
+import com.vm.dto.AvailabilityDTO;
 import com.vm.model.Availability;
 import com.vm.repo.AvailabilityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AvailabilityService {
@@ -61,11 +63,26 @@ public class AvailabilityService {
      * @param dateStr Ngày cần kiểm tra định dạng "yyyy-MM-dd"
      * @return Danh sách các Availability có sẵn
      */
-    public List<Availability> getAvailableShiftsByDate(String dateStr) {
+//    public List<Availability> getAvailableShiftsByDate(String dateStr) {
+//        try {
+//            LocalDate date = LocalDate.parse(dateStr);
+//            int dayOfWeek = date.getDayOfWeek().getValue(); // 1 = Monday, ..., 7 = Sunday
+//            return availabilityRepository.findByDayOfWeek(dayOfWeek);
+//        } catch (DateTimeParseException e) {
+//            throw new IllegalArgumentException("Invalid date format. Expected format: yyyy-MM-dd");
+//        }
+//    }
+
+    public List<AvailabilityDTO> getAvailableShiftsByDate(String dateStr) {
         try {
             LocalDate date = LocalDate.parse(dateStr);
             int dayOfWeek = date.getDayOfWeek().getValue(); // 1 = Monday, ..., 7 = Sunday
-            return availabilityRepository.findByDayOfWeek(dayOfWeek);
+            List<Availability> availabilities = availabilityRepository.findByDayOfWeek(dayOfWeek);
+
+            // Chuyển đổi danh sách `Availability` sang `AvailabilityDTO`
+            return availabilities.stream()
+                    .map(availability -> new AvailabilityDTO(availability, dateStr))
+                    .collect(Collectors.toList());
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Invalid date format. Expected format: yyyy-MM-dd");
         }

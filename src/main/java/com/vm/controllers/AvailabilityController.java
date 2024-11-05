@@ -1,5 +1,6 @@
 package com.vm.controllers;
 
+import com.vm.dto.AvailabilityDTO;
 import com.vm.model.Availability;
 import com.vm.service.UserService;
 import com.vm.service.impl.AvailabilityService;
@@ -98,10 +99,10 @@ public class AvailabilityController {
     }
 
     @GetMapping("/available-by-date")
-    public ResponseEntity<List<Availability>> getAvailableShiftsByDate(@RequestParam String date) {
+    public ResponseEntity<List<AvailabilityDTO>> getAvailableShiftsByDate(@RequestParam String date) {
         try {
             log.info("/available-by-date --- ");
-            List<Availability> availabilities = availabilityService.getAvailableShiftsByDate(date);
+            List<AvailabilityDTO> availabilities = availabilityService.getAvailableShiftsByDate(date);
             if (availabilities.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
