@@ -106,4 +106,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/getDoctorById/{user_id}")
+    public ResponseEntity<?> getDoctorById(@PathVariable String user_id) {
+        try {
+            log.info("/getDoctorById ---- ");
+            User user = userService.getDoctorById(user_id).get();
+            return new ResponseEntity<>(modelMapper.map(user, DoctorDTO.class), HttpStatus.OK);
+        }  catch (Exception e) {
+            log.error("/getDoctorById error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -55,6 +56,14 @@ public class UserService {
 
 	public List<User> getDoctors() {
 		return userRepo.getDoctors();
+	}
+
+	// Lấy bác sĩ cụ thể theo user_id
+	public Optional<User> getDoctorById(String userId) {
+		// Gọi getDoctors() rồi lọc theo userId
+		return getDoctors().stream()
+				.filter(doctor -> doctor.getId().toString().equals(userId))
+				.findFirst();
 	}
 
 //	public List<UserDTO> getDoctorsWithConversations(UUID userId) {
