@@ -140,6 +140,14 @@ public class UserService {
 		userRepo.save(user);
 	}
 
+	public void clearInforSurveyDetail() {
+		UUID currentUserId = getCurrentUUID();
+		User user = userRepo.findById(currentUserId).get();
+		user.setSurveyDetailId(null);
+		user.setLatestSpecializedVersion(null);
+		userRepo.save(user);
+	}
+
 	public UUID getUserIdByUserName(String username) {
 		return userRepo.getUserIdByUsername(username);
 	}

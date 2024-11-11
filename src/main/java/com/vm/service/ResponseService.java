@@ -15,5 +15,7 @@ public interface ResponseService {
 
 	public Map<String, String> getResultDetail(String userId);
 
-	public void deleteResponses(Long survey_id);
+//	public void deleteResponses(Long survey_id);
+
+	public void deleteResponses(String userId);
 }

@@ -173,8 +173,8 @@ public class ResponseServiceImpl implements ResponseService {
 	}
 
 	@Override
-	public void deleteResponses(Long survey_id) {
-		responseRepo.deleteAllByEmployeeIdIn(survey_id);
+	public void deleteResponses(String userId) {
+		responseRepo.deleteAllByEmployeeIdIn(userId);
 	}
 
 //    @Override

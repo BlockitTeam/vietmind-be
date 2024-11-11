@@ -86,9 +86,9 @@ public class ResponseController {
     public ResponseEntity<?> clearResult() throws Exception {
         try {
             log.info("/result delete---- : ");
-            Long surveyId = 1L;
-            responseService.deleteResponses(surveyId);
+            responseService.deleteResponses(userService.getStringCurrentUserId());
             userService.markCompleteGeneralSurvey(false);
+            userService.clearInforSurveyDetail();
             return new ResponseEntity<>("Delete successfully", HttpStatus.OK);
         } catch (Exception e) {
             log.error("/result failed to delete response", e);

@@ -26,6 +26,6 @@ public interface ResponseRepository extends CrudRepository<Response, Long> {
 
 	@Modifying
 	@Transactional
-	@Query("Delete from Response a where a.surveyId = :survey_id")
-	void deleteAllByEmployeeIdIn(@Param("survey_id") Long survey_id);
+	@Query("Delete from Response a where a.userId = :userId")
+	void deleteAllByEmployeeIdIn(@Param("userId") String userId);
 }
