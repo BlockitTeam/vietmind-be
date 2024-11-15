@@ -3,9 +3,10 @@ package com.vm.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.vm.dto.ConversationWithLastMessageDTO;
 import com.vm.model.Conversation;
 import com.vm.model.Message;
-import com.vm.model.Role;
 import com.vm.model.User;
 import com.vm.request.AppointmentResponse;
 import com.vm.request.SocketResponse;
@@ -28,8 +29,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -115,7 +116,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     //Add more infor Socket for Doctor reload left panel chat
                     //Nếu người nhận là doctor -> gửi thêm mess để load Panel
                     if (isDoctor(targetUserId)) {
+                        List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(targetUserId);
 
+                        //Send message to targetUserId
+                        SocketResponse resForLeftChatPanel = SocketResponse.builder().fromUserId(userId).conversationId(conversationId)
+                                .message(convertConversationsToJson(conversations)).type("panel").build();
+                        targetSession.sendMessage(new TextMessage(resForLeftChatPanel.toString()));
                     }
 
                 } else {
@@ -180,6 +186,15 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private boolean isDoctor(String targetUserId) {
         User user = userService.getUserById(targetUserId);
         return userService.hasRoleDoctor(user);
+    }
+
+    public String convertConversationsToJson(List<ConversationWithLastMessageDTO> conversations) {
+        try {
+            objectMapper.registerModule(new JavaTimeModule());
+            return objectMapper.writeValueAsString(conversations);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to convert conversations to JSON", e);
+        }
     }
 }
 
