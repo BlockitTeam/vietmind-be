@@ -71,4 +71,8 @@ public class User {
 			inverseJoinColumns = @JoinColumn(name = "role_id")
 	)
 	private Set<Role> roles = new HashSet<>();
+
+	public boolean hasRoleDoctor() {
+		return roles.stream().anyMatch(role -> "ROLE_DOCTOR".equals(role.getName()));
+	}
 }

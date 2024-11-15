@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vm.model.Conversation;
 import com.vm.model.Message;
+import com.vm.model.Role;
+import com.vm.model.User;
 import com.vm.request.AppointmentResponse;
 import com.vm.request.SocketResponse;
 import com.vm.service.ConversationService;
@@ -27,6 +29,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -108,6 +111,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                             .conversationId(conversationId).message(msg).messageId(newMess.getMessageId())
                             .createAt(newMess.getCreatedAt()).type(type).build();
                     targetSession.sendMessage(new TextMessage(res.toString()));
+
+                    //Add more infor Socket for Doctor reload left panel chat
+                    //Nếu người nhận là doctor -> gửi thêm mess để load Panel
+                    if (isDoctor(targetUserId)) {
+
+                    }
+
                 } else {
                     logger.info("Target user {} is not connected.", targetUserId);
                 }
@@ -165,6 +175,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             userId = String.valueOf(userService.getUserIdByUserName(username));
         }
         return userId;
+    }
+
+    private boolean isDoctor(String targetUserId) {
+        User user = userService.getUserById(targetUserId);
+        return userService.hasRoleDoctor(user);
     }
 }
 

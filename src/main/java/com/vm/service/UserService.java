@@ -168,4 +168,12 @@ public class UserService {
 		user.setSurveyDetailId(surveyId);
 		userRepo.save(user);
 	}
+
+	public User getUserById(String userId) {
+		return userRepo.findById(UUID.fromString(userId)).get();
+	}
+
+	public boolean hasRoleDoctor(User user) {
+		return user.getRoles().stream().anyMatch(role -> "ROLE_DOCTOR".equals(role.getName()));
+	}
 }
