@@ -52,6 +52,9 @@ public class ResponseServiceImpl implements ResponseService {
 		}
 		responseRepo.saveAll(responses);
 
+		//Mark survey general complete
+		userService.markCompleteGeneralSurvey(true);
+
 		//Base on save general -> find survey detail
 		int surveyDetailId = logicFindSurveyDetailIdMatched(userService.getStringCurrentUserId());
 		userService.markSurveyDetailId(surveyDetailId);
