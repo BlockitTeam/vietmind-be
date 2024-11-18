@@ -5,6 +5,7 @@ import com.vm.dto.UserDTO;
 import com.vm.dto.UserDoctorDTO;
 import com.vm.model.User;
 import com.vm.request.DoctorUserRequest;
+import com.vm.request.PasswordResetRequest;
 import com.vm.request.UserRequest;
 import com.vm.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -113,8 +114,29 @@ public class UserController {
             log.info("/getDoctorById ---- ");
             User user = userService.getDoctorById(user_id).get();
             return new ResponseEntity<>(modelMapper.map(user, DoctorDTO.class), HttpStatus.OK);
-        }  catch (Exception e) {
+        } catch (Exception e) {
             log.error("/getDoctorById error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest passwordResetRequest) {
+        try {
+            log.info("/reset-password ---- ");
+            boolean success = userService.resetPassword(
+                    userService.getCurrentUUID(),
+                    passwordResetRequest.getCurrentPassword(),
+                    passwordResetRequest.getNewPassword()
+            );
+
+            if (success) {
+                return new ResponseEntity<>("Updated password successful", HttpStatus.OK);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unable to reset password");
+            }
+        } catch (Exception e) {
+            log.error("/reset-password error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,9 @@ public class UserService {
 
 	@Autowired
 	private ModelMapper modelMapper;
+
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 
 	public void processOAuthPostLogin(String username, Provider provider) throws Exception {
 		User existUser = userRepo.getUserByUsername(username);
@@ -175,5 +179,28 @@ public class UserService {
 
 	public boolean hasRoleDoctor(User user) {
 		return user.getRoles().stream().anyMatch(role -> "ROLE_DOCTOR".equals(role.getName()));
+	}
+
+	// Service đặt lại mật khẩu
+	public boolean resetPassword(UUID userId, String currentPassword, String newPassword) {
+		Optional<User> optionalUser = userRepo.findById(userId);
+
+		if (optionalUser.isPresent()) {
+			User user = optionalUser.get();
+
+			// Kiểm tra mật khẩu hiện tại
+			if (passwordEncoder.matches(currentPassword, user.getPassword())) {
+
+				// Mã hóa và đặt mật khẩu mới
+				user.setPassword(passwordEncoder.encode(newPassword));
+				userRepo.save(user);
+				return true;
+			} else {
+				// Nếu mật khẩu hiện tại không đúng
+				throw new IllegalArgumentException("Current password is incorrect");
+			}
+		} else {
+			throw new IllegalArgumentException("No user found with the provided ID");
+		}
 	}
 }
