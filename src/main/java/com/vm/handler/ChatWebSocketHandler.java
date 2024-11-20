@@ -123,10 +123,21 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                                 .message(convertConversationsToJson(conversations)).type("panel").build();
                         targetSession.sendMessage(new TextMessage(resForLeftChatPanel.toString()));
                     }
-
                 } else {
                     logger.info("Target user {} is not connected.", targetUserId);
                 }
+
+                //Resend content panel cho chinh user Doctor vua gui di
+                if (isDoctor(userId)) {
+                    List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(userId);
+
+                    //Send message to currentUserId
+                    WebSocketSession currentSession = sessions.get(userId);
+                    SocketResponse resForLeftChatPanel = SocketResponse.builder().fromUserId(userId).conversationId(conversationId)
+                            .message(convertConversationsToJson(conversations)).type("panel").build();
+                    currentSession.sendMessage(new TextMessage(resForLeftChatPanel.toString()));
+                }
+
             } else if ("appointment".equals(type)) {
                 // Handle send appointment information
                 WebSocketSession targetSession = sessions.get(targetUserId);
