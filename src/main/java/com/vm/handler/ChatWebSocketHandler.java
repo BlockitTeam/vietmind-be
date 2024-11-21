@@ -38,7 +38,10 @@ import java.util.concurrent.ConcurrentMap;
 public class ChatWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(ChatWebSocketHandler.class);
     private final ConcurrentMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+//    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private MessageService messageService;
@@ -120,8 +123,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
                         //Send message to targetUserId
                         SocketResponse resForLeftChatPanel = SocketResponse.builder().fromUserId(userId).conversationId(conversationId)
-                                .message(convertConversationsToJson(conversations)).type("panel").build();
-                        targetSession.sendMessage(new TextMessage(resForLeftChatPanel.toString()));
+                                .message(conversations).type("panel").build();
+                        String jsonResponse = objectMapper.writeValueAsString(resForLeftChatPanel);
+                        targetSession.sendMessage(new TextMessage(jsonResponse));
                     }
                 } else {
                     logger.info("Target user {} is not connected.", targetUserId);
@@ -134,8 +138,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     //Send message to currentUserId
                     WebSocketSession currentSession = sessions.get(userId);
                     SocketResponse resForLeftChatPanel = SocketResponse.builder().fromUserId(userId).conversationId(conversationId)
-                            .message(convertConversationsToJson(conversations)).type("panel").build();
-                    currentSession.sendMessage(new TextMessage(resForLeftChatPanel.toString()));
+                            .message(conversations).type("panel").build();
+                    String jsonResponse = objectMapper.writeValueAsString(resForLeftChatPanel);
+                    currentSession.sendMessage(new TextMessage(jsonResponse));
                 }
 
             } else if ("appointment".equals(type)) {

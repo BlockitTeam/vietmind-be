@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class SocketResponse {
     private String fromUserId;
     private int conversationId;
-    private String message;
+    private Object message;
     private int messageId;
     private String type;
 

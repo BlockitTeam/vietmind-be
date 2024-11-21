@@ -1,5 +1,6 @@
 package com.vm.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,5 +45,11 @@ public class Conversation {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.note = "";
+    }
+
+    // Custom getter để chuyển thành định dạng ISO-8601
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

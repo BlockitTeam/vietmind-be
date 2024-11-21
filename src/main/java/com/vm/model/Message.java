@@ -1,5 +1,6 @@
 package com.vm.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import javax.persistence.*;
@@ -39,5 +40,11 @@ public class Message {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    // Custom getter để chuyển thành định dạng ISO-8601
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }
