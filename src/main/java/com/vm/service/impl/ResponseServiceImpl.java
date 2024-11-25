@@ -57,7 +57,8 @@ public class ResponseServiceImpl implements ResponseService {
 
 		//Base on save general -> find survey detail
 		int surveyDetailId = logicFindSurveyDetailIdMatched(userService.getStringCurrentUserId());
-		userService.markSurveyDetailId(surveyDetailId);
+		if (surveyDetailId != 0)
+			userService.markSurveyDetailId(surveyDetailId);
 	}
 
 	public int logicFindSurveyDetailIdMatched(String userId) {
@@ -78,6 +79,9 @@ public class ResponseServiceImpl implements ResponseService {
 						(e1, e2) -> e1, // If there are duplicates, keep the existing entry
 						LinkedHashMap::new // Preserve the order of insertion
 				));
+
+		if (areAllValuesZero(sortedScores))
+			return 0;
 
 		Map<String, Integer> surveyWithPriorityMap = getTitleAndPriorityMap();
 		String resultSurveyDetail = findHighestScoreKey(surveyWithPriorityMap, sortedScores);
@@ -202,4 +206,8 @@ public class ResponseServiceImpl implements ResponseService {
 //		questionMap.setOptions(options);
 //		return questionMap;
 //	}
+
+	public boolean areAllValuesZero(Map<String, Integer> sortedScores) {
+		return sortedScores.values().stream().allMatch(value -> value == 0);
+	}
 }
