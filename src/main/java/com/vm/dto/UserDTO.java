@@ -16,6 +16,7 @@ public class UserDTO {
 
     private boolean enabled;
     private boolean surveyCompleted;
+    private Integer latestSpecializedVersion;
     private Integer surveyDetail;
 
     private String firstName;
