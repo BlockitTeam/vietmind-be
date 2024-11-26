@@ -29,7 +29,7 @@ public class SpecializedResponse {
     @Column(name = "response_format")
     private String responseFormat;
 
-    @Column(name = "option_id", nullable = false)
+    @Column(name = "option_id")
     private Long optionId;
 
     @Column(name = "response_text")

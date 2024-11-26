@@ -50,10 +50,11 @@ public class SpecializedResponseService {
             response.setQuestionId(ele.getQuestionId());
 
             String typeResponse = ele.getResponseFormat();
-            if (typeResponse != null && "text_input".equals(typeResponse)) {
-                response.setResponseText(ele.getAnswer().toString());
+            if ("text_input".equals(typeResponse)) {
+                if (ele.getAnswer() != null)
+                    response.setResponseText(ele.getAnswer().toString());
                 response.setResponseFormat(typeResponse);
-            } else if (typeResponse != null && "parent_question".equals(typeResponse)) {
+            } else if ("parent_question".equals(typeResponse)) {
                 continue;
             } else {
                 Object answer = ele.getAnswer();
@@ -119,11 +120,17 @@ public class SpecializedResponseService {
             for (SpecializedResponse response : result) {
                 if (response.getQuestionId().equals(question.getQuestionId())
                         && response.getSurveyId().equals(question.getSurveyId())) {
-                    // Kiểm tra nếu có Option tương ứng trong question thì set giá trị
-                    question.getOptions().stream()
-                            .filter(option -> option.getOptionId().equals(response.getOptionId()))
-                            .findFirst()
-                            .ifPresent(option -> question.setAnswer(option.getOptionId()));
+
+                    if ("single_choice".equals(response.getResponseFormat())) {
+                        // Kiểm tra nếu có Option tương ứng trong question thì set giá trị
+                        question.getOptions().stream()
+                                .filter(option -> option.getOptionId().equals(response.getOptionId()))
+                                .findFirst()
+                                .ifPresent(option -> question.setAnswer(option.getOptionId()));
+                    } else if ("text_input".equals(response.getResponseFormat())) {
+                        // Gán trực tiếp giá trị từ response.getResponseText() cho question.setAnswer
+                        question.setAnswer(response.getResponseText());
+                    }
                 }
             }
         }
