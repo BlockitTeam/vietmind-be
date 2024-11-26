@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import javax.persistence.EntityNotFoundException;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -78,7 +79,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Appointment getAppointmentByUserId(String userId) {
-        return appointmentRepository.findTopByUserIdOrderByAppointmentIdDesc(userId).get();
+    public Optional<Appointment> getAppointmentByUserId(String userId) {
+        return appointmentRepository.findTopByUserIdOrderByAppointmentIdDesc(userId);
     }
 }

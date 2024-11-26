@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/v1/appointments")
 @RequiredArgsConstructor
@@ -58,7 +60,14 @@ public class AppointmentController {
     public ResponseEntity<?> getAppointmentByCurrentUser() {
         try {
             log.info("/appointments get appointment of current user ---- ");
-            return ResponseEntity.ok(appointmentService.getAppointmentByUserId(userService.getStringCurrentUserId()));
+            String userId = userService.getStringCurrentUserId();
+            Optional<Appointment> appointment = appointmentService.getAppointmentByUserId(userId);
+            if (appointment.isPresent()) {
+                return ResponseEntity.ok(appointment.get());
+            } else {
+                // Trả về phản hồi trống với HTTP 200 và thông báo
+                return ResponseEntity.ok("No appointments found for the current user.");
+            }
         }  catch (Exception e) {
             log.error("/appointments get appointment of current user error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
