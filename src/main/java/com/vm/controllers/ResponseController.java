@@ -1,6 +1,5 @@
 package com.vm.controllers;
 
-import com.vm.model.Response;
 import com.vm.request.QuestionObject;
 import com.vm.service.AppointmentService;
 import com.vm.service.ResponseService;
@@ -24,17 +23,17 @@ public class ResponseController {
     private final UserService userService;
     private final AppointmentService appointmentService;
 
-    @GetMapping("")
-    public ResponseEntity<?> getResponses() {
-        try {
-            log.info("/response get all ---- : ");
-            List<Response> questions = responseService.getResponseBySurveyId(1L);
-            return ResponseEntity.ok(questions);
-        } catch (Exception e) {
-            log.error("/response get all  error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
+//    @GetMapping("")
+//    public ResponseEntity<?> getResponses() {
+//        try {
+//            log.info("/response get all ---- : ");
+//            List<Response> questions = responseService.getResponseBySurveyId(1L);
+//            return ResponseEntity.ok(questions);
+//        } catch (Exception e) {
+//            log.error("/response get all  error: {}", e.getMessage(), e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+//        }
+//    }
 
     @PostMapping("")
     public ResponseEntity<?> saveResponse(@RequestBody List<QuestionObject> request) {
@@ -64,7 +63,7 @@ public class ResponseController {
     public ResponseEntity<?> getResultDetail() {
         try {
             log.info("/resultDetail ---- : ");
-            Map<String, String> result = responseService.getResult(userService.getStringCurrentUserId());
+            List<QuestionObject> result = responseService.getResultDetail(userService.getStringCurrentUserId());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("/resultDetail error: {}", e.getMessage(), e);

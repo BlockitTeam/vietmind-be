@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface ResponseRepository extends CrudRepository<Response, Long> {
-	@Query("SELECT u FROM Response u WHERE u.surveyId = :survey_id")
-	public List<Response> getResponseBySurveyId(@Param("survey_id") Long survey_id);
+	@Query("SELECT u FROM Response u WHERE u.userId = :userId")
+	public List<Response> getResponseByUserId(@Param("userId") String userId);
 
 	@Query(value = "SELECT res.response_id as responseId, res.user_id as userId, res.option_id as optionId, res.created_at as createdAt, res.updated_at as updatedAt, " +
 			"opt.score as score, quest.question_type_id as questionTypeId, quest_t.question_type as questionType " +

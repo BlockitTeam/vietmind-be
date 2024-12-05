@@ -4,7 +4,9 @@ import com.vm.model.Response;
 import com.vm.repo.OptionRepository;
 import com.vm.repo.ResponseRepository;
 import com.vm.repo.SurveyRepository;
+import com.vm.repo.UserRepository;
 import com.vm.request.QuestionObject;
+import com.vm.service.QuestionService;
 import com.vm.service.ResponseService;
 import com.vm.service.UserService;
 import org.modelmapper.ModelMapper;
@@ -20,6 +22,9 @@ public class ResponseServiceImpl implements ResponseService {
 	private ResponseRepository responseRepo;
 
 	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
 	private OptionRepository optionRepo;
 
 	@Autowired
@@ -31,12 +36,15 @@ public class ResponseServiceImpl implements ResponseService {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private QuestionService questionService;
+
 	private static final int MAX_SCORE = 10;
 
-	@Override
-	public List<Response> getResponseBySurveyId(Long survey_id) {
-		return responseRepo.getResponseBySurveyId(survey_id);
-	}
+//	@Override
+//	public List<Response> getResponseBySurveyId(Long survey_id) {
+//		return responseRepo.getResponseByUserId(survey_id);
+//	}
 
 	@Override
 	public void saveResponse(List<QuestionObject> request) {
@@ -173,10 +181,20 @@ public class ResponseServiceImpl implements ResponseService {
 	}
 
 	@Override
-	public Map<String, String> getResultDetail(String userId) {
-//		List<Response> response = responseRepo.getResponseBySurveyId(survey_id);
+	public List<QuestionObject> getResultDetail(String userId) {
+		List<QuestionObject> questions = questionService.getQuestionBySurveyId(1);
+		List<Response> result = responseRepo.getResponseByUserId(userId);
 
-		return null;
+		// Gán phản hồi vào các câu hỏi
+		for (QuestionObject question : questions) {
+			for (Response response : result) {
+				question.getOptions().stream()
+						.filter(option -> option.getOptionId().equals(response.getOptionId()))
+						.findFirst()
+						.ifPresent(option -> question.setAnswer(option.getOptionId()));
+			}
+		}
+		return questions;
 	}
 
 	@Override
