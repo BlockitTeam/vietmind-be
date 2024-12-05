@@ -86,4 +86,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     public Optional<Appointment> getAppointmentByUserId(String userId) {
         return appointmentRepository.findTopByUserIdOrderByAppointmentIdDesc(userId);
     }
+
+    @Override
+    public void deleteAppointmentsByUserId(String userId) {
+        try {
+            appointmentRepository.deleteByUserId(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete appointments");
+        }
+    }
 }

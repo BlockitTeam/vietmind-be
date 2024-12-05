@@ -9,4 +9,5 @@ public interface AppointmentService {
     public UserDoctorDTO createAppointment(Appointment appointment) throws Exception;
     public Appointment getAppointmentByConversationId(Integer id);
     public Optional<Appointment> getAppointmentByUserId(String userId);
+    public void deleteAppointmentsByUserId(String userId);
 }

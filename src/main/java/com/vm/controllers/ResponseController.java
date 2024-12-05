@@ -2,6 +2,7 @@ package com.vm.controllers;
 
 import com.vm.model.Response;
 import com.vm.request.QuestionObject;
+import com.vm.service.AppointmentService;
 import com.vm.service.ResponseService;
 import com.vm.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class ResponseController {
     private final Logger log = LoggerFactory.getLogger(ResponseController.class);
     private final ResponseService responseService;
     private final UserService userService;
+    private final AppointmentService appointmentService;
 
     @GetMapping("")
     public ResponseEntity<?> getResponses() {
@@ -89,6 +91,7 @@ public class ResponseController {
             responseService.deleteResponses(userService.getStringCurrentUserId());
             userService.markCompleteGeneralSurvey(false);
             userService.clearInforSurveyDetail();
+            appointmentService.deleteAppointmentsByUserId(userService.getStringCurrentUserId());
             return new ResponseEntity<>("Delete successfully", HttpStatus.OK);
         } catch (Exception e) {
             log.error("/result failed to delete response", e);
