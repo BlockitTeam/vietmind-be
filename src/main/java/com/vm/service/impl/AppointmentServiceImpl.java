@@ -103,7 +103,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public List<AppointmentEventDTO> getAppointmentsByDoctorId(String doctorId) {
-        List<Appointment> appointments = appointmentRepository.findAllByDoctorId(doctorId);
+        List<Appointment> appointments = appointmentRepository.findAllByDoctorIdAndFutureAppointments(doctorId);
 
         return appointments.stream()
                 .map(appointment -> new AppointmentEventDTO(

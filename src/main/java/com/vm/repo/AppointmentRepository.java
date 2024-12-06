@@ -2,6 +2,8 @@ package com.vm.repo;
 
 import com.vm.model.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,4 +25,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Lấy lịch hẹn theo doctorId
     List<Appointment> findAllByDoctorId(String doctorId);
+
+    // Lấy lịch hẹn theo doctorId và appointmentDate >= ngày hiện tại
+    @Query("SELECT a FROM Appointment a WHERE a.doctorId = :doctorId AND a.appointmentDate >= CURRENT_DATE")
+    List<Appointment> findAllByDoctorIdAndFutureAppointments(@Param("doctorId") String doctorId);
 }
