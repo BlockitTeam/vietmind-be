@@ -14,6 +14,6 @@ import java.util.Date;
 public class AppointmentEventDTO {
     private String id;
     private String title;
-    private Date start;
-    private Date end;
+    private String start; // Định dạng "YYYY-MM-DDTHH:mm"
+    private String end;   // Định dạng "YYYY-MM-DDTHH:mm"
 }

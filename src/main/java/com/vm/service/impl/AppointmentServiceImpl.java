@@ -20,6 +20,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -101,21 +102,22 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
-    @Override
     public List<AppointmentEventDTO> getAppointmentsByDoctorId(String doctorId) {
         List<Appointment> appointments = appointmentRepository.findAllByDoctorIdAndFutureAppointments(doctorId);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
         return appointments.stream()
                 .map(appointment -> new AppointmentEventDTO(
                         String.valueOf(appointment.getAppointmentId()),
                         appointment.getContent(),
-                        convertToDate(appointment.getAppointmentDate(), appointment.getStartTime()),
-                        convertToDate(appointment.getAppointmentDate(), appointment.getEndTime())
+                        formatDateTime(appointment.getAppointmentDate(), appointment.getStartTime(), formatter),
+                        formatDateTime(appointment.getAppointmentDate(), appointment.getEndTime(), formatter)
                 ))
                 .collect(Collectors.toList());
     }
 
-    private Date convertToDate(LocalDate date, LocalTime time) {
-        return Date.from(date.atTime(time).atZone(ZoneId.systemDefault()).toInstant());
+    private String formatDateTime(LocalDate date, LocalTime time, DateTimeFormatter formatter) {
+        return date.atTime(time).format(formatter); // Kết hợp LocalDate và LocalTime rồi format
     }
 }
