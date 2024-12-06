@@ -1,5 +1,6 @@
 package com.vm.controllers;
 
+import com.vm.dto.AppointmentEventDTO;
 import com.vm.model.Appointment;
 import com.vm.service.AppointmentService;
 import com.vm.service.UserService;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -71,6 +73,18 @@ public class AppointmentController {
         }  catch (Exception e) {
             log.error("/appointments get appointment of current user error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/doctor")
+    public ResponseEntity<?> getAppointmentsByCurrentDoctor() {
+        try {
+            log.info("/appointments/doctor get appointment of current doctor ---- ");
+            List<AppointmentEventDTO> events = appointmentService.getAppointmentsByDoctorId(userService.getStringCurrentUserId());
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch appointments for doctorId: " + userService.getStringCurrentUserId());
         }
     }
 }

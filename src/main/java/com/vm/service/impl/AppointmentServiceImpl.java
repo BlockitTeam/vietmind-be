@@ -1,5 +1,6 @@
 package com.vm.service.impl;
 
+import com.vm.dto.AppointmentEventDTO;
 import com.vm.dto.UserDoctorDTO;
 import com.vm.model.Appointment;
 import com.vm.model.Conversation;
@@ -16,9 +17,11 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import java.util.Base64;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -96,5 +99,23 @@ public class AppointmentServiceImpl implements AppointmentService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete appointments");
         }
+    }
+
+    @Override
+    public List<AppointmentEventDTO> getAppointmentsByDoctorId(String doctorId) {
+        List<Appointment> appointments = appointmentRepository.findAllByDoctorId(doctorId);
+
+        return appointments.stream()
+                .map(appointment -> new AppointmentEventDTO(
+                        String.valueOf(appointment.getAppointmentId()),
+                        appointment.getContent(),
+                        convertToDate(appointment.getAppointmentDate(), appointment.getStartTime()),
+                        convertToDate(appointment.getAppointmentDate(), appointment.getEndTime())
+                ))
+                .collect(Collectors.toList());
+    }
+
+    private Date convertToDate(LocalDate date, LocalTime time) {
+        return Date.from(date.atTime(time).atZone(ZoneId.systemDefault()).toInstant());
     }
 }
