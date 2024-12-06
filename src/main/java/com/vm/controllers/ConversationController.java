@@ -63,11 +63,11 @@ public class ConversationController {
 
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @GetMapping("")
-    public ResponseEntity<?> getAllConversationOfCurrentUser() {
+    public ResponseEntity<?> getAllConversationOfCurrentUser(@RequestParam(value = "senderName", required = false) String senderName) {
         try {
             log.info("/getAllConversationOfCurrentUser ---- ");
             UUID currentUserId = userService.getCurrentUUID();
-            List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(String.valueOf(currentUserId));
+            List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(String.valueOf(currentUserId), senderName);
             return ResponseEntity.ok(conversations);
         } catch (Exception e) {
             log.error("/getAllConversationOfCurrentUser error: {}", e.getMessage(), e);

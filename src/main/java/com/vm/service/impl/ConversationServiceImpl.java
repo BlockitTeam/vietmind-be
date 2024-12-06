@@ -14,6 +14,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ConversationServiceImpl implements ConversationService {
@@ -21,7 +22,7 @@ public class ConversationServiceImpl implements ConversationService {
     private ConversationRepository conversationRepo;
 
     @Override
-    public List<ConversationWithLastMessageDTO> getConversationsWithLastMessageByUserId(String userId) {
+    public List<ConversationWithLastMessageDTO> getConversationsWithLastMessageByUserId(String userId, String senderName) {
         List<Object[]> results = conversationRepo.findAllConversationsWithLastMessageByUserId(userId);
         List<ConversationWithLastMessageDTO> conversations = new ArrayList<>();
 
@@ -40,6 +41,13 @@ public class ConversationServiceImpl implements ConversationService {
         conversations.sort((dto1, dto2) -> dto2.getLastMessage().getCreatedAt()
                 .compareTo(dto1.getLastMessage().getCreatedAt()));
 
+        // Lọc theo senderName nếu được cung cấp
+        if (senderName != null && !senderName.trim().isEmpty()) {
+            String lowerCaseSenderName = senderName.toLowerCase();
+            conversations = conversations.stream()
+                    .filter(conversation -> conversation.getSenderFullName().toLowerCase().contains(lowerCaseSenderName))
+                    .collect(Collectors.toList());
+        }
         return conversations;
     }
 

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ConversationService {
-	public List<ConversationWithLastMessageDTO> getConversationsWithLastMessageByUserId(String personId);
+	public List<ConversationWithLastMessageDTO> getConversationsWithLastMessageByUserId(String personId, String senderName);
 	public Conversation saveConversation(Conversation conversation) ;
 	public Conversation getConversationByUserIdAndDoctorId(String userId, String doctorId);
 	public Optional<Conversation> getConversationById(Integer id);

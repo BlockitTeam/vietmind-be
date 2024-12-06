@@ -119,7 +119,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     //Add more infor Socket for Doctor reload left panel chat
                     //Nếu người nhận là doctor -> gửi thêm mess để load Panel
                     if (isDoctor(targetUserId)) {
-                        List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(targetUserId);
+                        List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(targetUserId, null);
 
                         //Send message to targetUserId
                         SocketResponse resForLeftChatPanel = SocketResponse.builder().fromUserId(userId).conversationId(conversationId)
@@ -133,7 +133,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
                 //Resend content panel cho chinh user Doctor vua gui di
                 if (isDoctor(userId)) {
-                    List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(userId);
+                    List<ConversationWithLastMessageDTO> conversations = conversationService.getConversationsWithLastMessageByUserId(userId, null);
 
                     //Send message to currentUserId
                     WebSocketSession currentSession = sessions.get(userId);
