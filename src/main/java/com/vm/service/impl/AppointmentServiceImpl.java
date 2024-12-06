@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
@@ -88,6 +89,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Transactional
     public void deleteAppointmentsByUserId(String userId) {
         try {
             appointmentRepository.deleteByUserId(userId);
