@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.security.PublicKey;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,14 +42,16 @@ public class ConversationServiceImpl implements ConversationService {
         // Sort list base on createdAt of Message newest
         conversations.sort((dto1, dto2) -> dto2.getLastMessage().getCreatedAt()
                 .compareTo(dto1.getLastMessage().getCreatedAt()));
-
+        
         // Lọc theo senderName nếu được cung cấp
         if (senderName != null && !senderName.trim().isEmpty()) {
-            String lowerCaseSenderName = senderName.toLowerCase();
+            String normalizedSenderName = normalizeString(senderName);
             conversations = conversations.stream()
-                    .filter(conversation -> conversation.getSenderFullName().toLowerCase().contains(lowerCaseSenderName))
+                    .filter(conversation -> normalizeString(conversation.getSenderFullName())
+                            .contains(normalizedSenderName))
                     .collect(Collectors.toList());
         }
+
         return conversations;
     }
 
@@ -99,5 +103,13 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public void updateNoteByConversationId(Integer conversationId, String note) {
         conversationRepo.updateNoteByConversationId(conversationId, note);
+    }
+
+    private String normalizeString(String input) {
+        if (input == null) {
+            return "";
+        }
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        return Pattern.compile("\\p{M}").matcher(normalized).replaceAll("").toLowerCase();
     }
 }
