@@ -13,6 +13,8 @@ import com.vm.service.ConversationService;
 import com.vm.util.KeyManagement;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -41,13 +43,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public UserDoctorDTO createAppointment(Appointment appointment) throws Exception {
-        Integer appointmentId = appointment.getAppointmentId();
-        if (appointmentId == null) {
-            Integer conversationId = appointment.getConversationId();
-            Appointment appointmentExist = getAppointmentByConversationId(conversationId);
-            if (appointmentExist != null)
-                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
-        }
+//        Integer appointmentId = appointment.getAppointmentId();
+//        if (appointmentId == null) {
+//            Integer conversationId = appointment.getConversationId();
+//            Appointment appointmentExist = getAppointmentByConversationId(conversationId);
+//            if (appointmentExist != null)
+//                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
+//        }
 
         Conversation conversation = conversationService.getConversationByUserIdAndDoctorId(appointment.getUserId(), appointment.getDoctorId());
         Integer conversationId;
@@ -183,6 +185,71 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Lấy appointment có id lớn nhất
         return allFutureAppointments.stream()
                 .max(Comparator.comparing(Appointment::getAppointmentId));
+    }
+
+    @Override
+    public Appointment doctorCreateAppointment(Appointment appointment) {
+        String userId = appointment.getUserId();
+        // Lấy cuộc hẹn hiện tại hoặc đang diễn ra
+        Optional<Appointment> currentAppointment = getCurrentAppointmentByUserId(userId);
+
+        if (currentAppointment.isPresent()) {
+            Appointment current = currentAppointment.get();
+
+            // Thời điểm hiện tại
+            LocalDateTime now = LocalDateTime.now();
+
+            // Tính thời điểm bắt đầu và kết thúc của cuộc hẹn hiện tại
+            LocalDateTime currentAppointmentStartTime = LocalDateTime.of(
+                    current.getAppointmentDate(),
+                    current.getStartTime()
+            );
+            LocalDateTime currentAppointmentEndTime = LocalDateTime.of(
+                    current.getAppointmentDate(),
+                    current.getEndTime()
+            );
+
+            // Kiểm tra nếu cuộc hẹn hiện tại chưa diễn ra
+            if (currentAppointmentStartTime.isAfter(now)) {
+                throw new IllegalStateException(
+                        "The user already has an upcoming appointment. Cannot create a new one."
+                );
+            }
+
+            // Thời điểm bắt đầu của cuộc hẹn mới
+            LocalDateTime newAppointmentStartTime = LocalDateTime.of(
+                    appointment.getAppointmentDate(),
+                    appointment.getStartTime()
+            );
+
+            // Kiểm tra nếu thời gian cuộc hẹn mới <= thời gian kết thúc của cuộc hẹn hiện tại
+            if (!newAppointmentStartTime.isAfter(currentAppointmentEndTime)) {
+                throw new IllegalStateException(
+                        "The new appointment must be scheduled after the current appointment ends."
+                );
+            }
+        }
+
+
+        // Lấy cuộc hẹn sắp tới
+        Optional<Appointment> futureAppointment = getFutureAppointmentByUserId(userId);
+
+        boolean beAbleHaveFutureAppointment = false;
+
+
+        if (futureAppointment.isPresent()) {
+            if (currentAppointment.isPresent()
+                    && currentAppointment.get().getAppointmentId().equals(futureAppointment.get().getAppointmentId())) {
+                // Nếu futureAppointment giống currentAppointment, trả về Not Found
+                beAbleHaveFutureAppointment = true;
+            }
+        } else
+            beAbleHaveFutureAppointment = true;
+
+        if (!beAbleHaveFutureAppointment) {
+            throw new IllegalStateException("Cannot create a future appointment for this user.");
+        }
+        return appointmentRepository.save(appointment);
     }
 
     private String formatDateTime(LocalDate date, LocalTime time, DateTimeFormatter formatter) {

@@ -148,4 +148,15 @@ public class AppointmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @PostMapping("/doctor/create")
+    public ResponseEntity<?> doctorCreateAppointment(@RequestBody Appointment appointment) {
+        try {
+            log.info("/appointment/doctor/ create ---- ");
+            return ResponseEntity.ok(appointmentService.doctorCreateAppointment(appointment));
+        }  catch (Exception e) {
+            log.error("/appointments create error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }

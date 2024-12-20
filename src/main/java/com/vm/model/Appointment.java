@@ -28,7 +28,7 @@ public class Appointment {
     @Column(name = "doctor_id", nullable = false)
     private String doctorId;
 
-    @Column(name = "conversation_id", nullable = false)
+    @Column(name = "conversation_id")
     private Integer conversationId;
 
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)

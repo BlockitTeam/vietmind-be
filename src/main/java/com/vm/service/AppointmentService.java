@@ -16,4 +16,5 @@ public interface AppointmentService {
     public List<Appointment> getFinishedAppointmentsByUserId(String userId);
     public Optional<Appointment>  getCurrentAppointmentByUserId(String userId);
     public Optional<Appointment> getFutureAppointmentByUserId(String userId);
+    public Appointment doctorCreateAppointment(Appointment appointment);
 }
