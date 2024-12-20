@@ -126,8 +126,19 @@ public class AppointmentController {
     public ResponseEntity<?> forDoctorGetFutureAppointmentByUserId(@PathVariable String userId) {
         try {
             log.info("/appointments/doctor/futureAppointment/{} ---- get future appointment of user", userId);
+
+            // Lấy cuộc hẹn hiện tại hoặc đang diễn ra
+            Optional<Appointment> currentAppointment = appointmentService.getCurrentAppointmentByUserId(userId);
+
+            // Lấy cuộc hẹn sắp tới
             Optional<Appointment> futureAppointment = appointmentService.getFutureAppointmentByUserId(userId);
+
             if (futureAppointment.isPresent()) {
+                if (currentAppointment.isPresent()
+                        && currentAppointment.get().getAppointmentId().equals(futureAppointment.get().getAppointmentId())) {
+                    // Nếu futureAppointment giống currentAppointment, trả về Not Found
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No future appointments found.");
+                }
                 return ResponseEntity.ok(futureAppointment.get());
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No future appointments found.");
