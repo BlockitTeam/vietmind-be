@@ -1,5 +1,6 @@
 package com.vm.repo;
 
+import com.vm.enums.AppointmentStatus;
 import com.vm.model.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +30,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Lấy lịch hẹn theo doctorId và appointmentDate >= ngày hiện tại
     @Query("SELECT a FROM Appointment a WHERE a.doctorId = :doctorId AND a.appointmentDate >= CURRENT_DATE")
     List<Appointment> findAllByDoctorIdAndFutureAppointments(@Param("doctorId") String doctorId);
+
+    // Lấy tất cả cuộc hẹn FINISH theo userId
+    List<Appointment> findAllByStatusAndUserId(AppointmentStatus status, String userId);
 }

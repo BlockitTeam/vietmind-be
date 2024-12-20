@@ -93,8 +93,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Optional<Appointment> getAppointmentByUserId(String userId) {
-//        return appointmentRepository.findTopByUserIdOrderByAppointmentIdDesc(userId);
-
         Optional<Appointment> appointmentOptional = appointmentRepository.findTopByUserIdOrderByAppointmentIdDesc(userId);
         appointmentOptional.ifPresent(appointment -> {
             LocalDateTime now = LocalDateTime.now();
@@ -140,6 +138,10 @@ public class AppointmentServiceImpl implements AppointmentService {
                         formatDateTime(appointment.getAppointmentDate(), appointment.getEndTime(), formatter)
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public List<Appointment> getFinishedAppointmentsByUserId(String userId) {
+        return appointmentRepository.findAllByStatusAndUserId(AppointmentStatus.FINISH, userId);
     }
 
     private String formatDateTime(LocalDate date, LocalTime time, DateTimeFormatter formatter) {

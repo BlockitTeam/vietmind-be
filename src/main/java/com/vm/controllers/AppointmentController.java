@@ -87,4 +87,21 @@ public class AppointmentController {
                     .body("Failed to fetch appointments for doctorId: " + userService.getStringCurrentUserId());
         }
     }
+
+    @GetMapping("/finished")
+    public ResponseEntity<?> getFinishedAppointmentsByCurrentUser() {
+        try {
+            log.info("/appointments/finished ---- Get finished appointments for current user");
+            String userId = userService.getStringCurrentUserId();
+            List<Appointment> finishedAppointments = appointmentService.getFinishedAppointmentsByUserId(userId);
+
+            if (finishedAppointments.isEmpty()) {
+                return ResponseEntity.ok("No finished appointments found for the current user.");
+            }
+            return ResponseEntity.ok(finishedAppointments);
+        } catch (Exception e) {
+            log.error("/appointments/finished error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }
