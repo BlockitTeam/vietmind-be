@@ -43,8 +43,27 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             LocalTime currentTime
     );
 
-    // Lấy lịch hẹn trong tương lai với appointmentId lớn nhất
-    Optional<Appointment> findTopByUserIdAndAppointmentDateAfterAndStartTimeAfterOrderByAppointmentIdDesc(
+    @Query("SELECT a FROM Appointment a " +
+            "WHERE a.userId = :userId " +
+            "AND ((a.appointmentDate = :currentDate AND a.startTime <= :currentTime AND a.endTime >= :currentTime) " +
+            "OR (a.appointmentDate > :currentDate OR (a.appointmentDate = :currentDate AND a.startTime > :currentTime))) " +
+            "ORDER BY a.appointmentDate ASC, a.startTime ASC")
+    Optional<Appointment> findCurrentOrUpcomingAppointment(
+            @Param("userId") String userId,
+            @Param("currentDate") LocalDate currentDate,
+            @Param("currentTime") LocalTime currentTime);
+
+
+
+
+    // Lấy cuộc hẹn có ngày lớn hơn ngày hiện tại
+    List<Appointment> findByUserIdAndAppointmentDateGreaterThanOrderByAppointmentIdDesc(
+            String userId,
+            LocalDate currentDate
+    );
+
+    // Lấy cuộc hẹn có ngày bằng ngày hiện tại và thời gian bắt đầu lớn hơn thời gian hiện tại
+    List<Appointment> findByUserIdAndAppointmentDateEqualsAndStartTimeGreaterThanOrderByAppointmentIdDesc(
             String userId,
             LocalDate currentDate,
             LocalTime currentTime

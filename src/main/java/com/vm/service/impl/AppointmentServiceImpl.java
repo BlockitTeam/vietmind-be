@@ -22,10 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -145,23 +142,47 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Transactional
     public Optional<Appointment>  getCurrentAppointmentByUserId(String userId) {
-        LocalDateTime now = LocalDateTime.now(); // Lấy thời gian hiện tại của hệ thống
-        return appointmentRepository.findTopByUserIdAndAppointmentDateBeforeAndEndTimeBeforeOrderByAppointmentIdDesc(
-                userId,
-                now.toLocalDate(),
-                now.toLocalTime()
-        );
+        LocalDate currentDate = LocalDate.now();
+        LocalTime currentTime = LocalTime.now();
+
+        Optional<Appointment> appointmentOpt = appointmentRepository.findCurrentOrUpcomingAppointment(userId, currentDate, currentTime);
+
+        appointmentOpt.ifPresent(appointment -> {
+            if (appointment.getAppointmentDate().isEqual(currentDate) &&
+                    !currentTime.isBefore(appointment.getStartTime()) &&
+                    !currentTime.isAfter(appointment.getEndTime())) {
+                // Nếu cuộc hẹn đang diễn ra, cập nhật trạng thái thành IN_PROGRESS
+                appointment.setStatus(AppointmentStatus.IN_PROGRESS);
+                appointmentRepository.save(appointment);
+            }
+        });
+        return appointmentOpt;
     }
 
     @Override
     public Optional<Appointment> getFutureAppointmentByUserId(String userId) {
         LocalDateTime now = LocalDateTime.now(); // Lấy thời gian hiện tại
-        return appointmentRepository.findTopByUserIdAndAppointmentDateAfterAndStartTimeAfterOrderByAppointmentIdDesc(
-                userId,
-                now.toLocalDate(),
-                now.toLocalTime()
-        );
+        LocalDate currentDate = now.toLocalDate();
+        LocalTime currentTime = now.toLocalTime();
+
+        // Lấy danh sách cuộc hẹn lớn hơn ngày hiện tại
+        List<Appointment> futureAppointmentsByDate =
+                appointmentRepository.findByUserIdAndAppointmentDateGreaterThanOrderByAppointmentIdDesc(userId, currentDate);
+
+        // Lấy danh sách cuộc hẹn trong ngày nhưng có thời gian lớn hơn hiện tại
+        List<Appointment> futureAppointmentsByTime =
+                appointmentRepository.findByUserIdAndAppointmentDateEqualsAndStartTimeGreaterThanOrderByAppointmentIdDesc(userId, currentDate, currentTime);
+
+        // Kết hợp hai danh sách
+        List<Appointment> allFutureAppointments = new ArrayList<>();
+        allFutureAppointments.addAll(futureAppointmentsByDate);
+        allFutureAppointments.addAll(futureAppointmentsByTime);
+
+        // Lấy appointment có id lớn nhất
+        return allFutureAppointments.stream()
+                .max(Comparator.comparing(Appointment::getAppointmentId));
     }
 
     private String formatDateTime(LocalDate date, LocalTime time, DateTimeFormatter formatter) {

@@ -123,16 +123,15 @@ public class AppointmentController {
     }
 
     @GetMapping("/doctor/futureAppointment/{userId}")
-    public ResponseEntity<?> getFutureAppointmentByUserId(@PathVariable String userId) {
+    public ResponseEntity<?> forDoctorGetFutureAppointmentByUserId(@PathVariable String userId) {
         try {
             log.info("/appointments/doctor/futureAppointment/{} ---- get future appointment of user", userId);
             Optional<Appointment> futureAppointment = appointmentService.getFutureAppointmentByUserId(userId);
-
             if (futureAppointment.isPresent()) {
                 return ResponseEntity.ok(futureAppointment.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No future appointments found.");
             }
-
-            return ResponseEntity.ok("No appointments found for the userId.");
         } catch (Exception e) {
             log.error("/appointments/doctor/futureAppointment error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
