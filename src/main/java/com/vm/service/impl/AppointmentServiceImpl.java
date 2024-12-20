@@ -144,6 +144,26 @@ public class AppointmentServiceImpl implements AppointmentService {
         return appointmentRepository.findAllByStatusAndUserId(AppointmentStatus.FINISH, userId);
     }
 
+    @Override
+    public Optional<Appointment>  getCurrentAppointmentByUserId(String userId) {
+        LocalDateTime now = LocalDateTime.now(); // Lấy thời gian hiện tại của hệ thống
+        return appointmentRepository.findTopByUserIdAndAppointmentDateBeforeAndEndTimeBeforeOrderByAppointmentIdDesc(
+                userId,
+                now.toLocalDate(),
+                now.toLocalTime()
+        );
+    }
+
+    @Override
+    public Optional<Appointment> getFutureAppointmentByUserId(String userId) {
+        LocalDateTime now = LocalDateTime.now(); // Lấy thời gian hiện tại
+        return appointmentRepository.findTopByUserIdAndAppointmentDateAfterAndStartTimeAfterOrderByAppointmentIdDesc(
+                userId,
+                now.toLocalDate(),
+                now.toLocalTime()
+        );
+    }
+
     private String formatDateTime(LocalDate date, LocalTime time, DateTimeFormatter formatter) {
         return date.atTime(time).format(formatter); // Kết hợp LocalDate và LocalTime rồi format
     }

@@ -14,4 +14,6 @@ public interface AppointmentService {
     public void deleteAppointmentsByUserId(String userId);
     public List<AppointmentEventDTO> getAppointmentsByDoctorId(String doctorId);
     public List<Appointment> getFinishedAppointmentsByUserId(String userId);
+    public Optional<Appointment>  getCurrentAppointmentByUserId(String userId);
+    public Optional<Appointment> getFutureAppointmentByUserId(String userId);
 }

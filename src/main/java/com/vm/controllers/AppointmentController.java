@@ -104,4 +104,38 @@ public class AppointmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/doctor/currentAppointment/{userId}")
+    public ResponseEntity<?> forDoctorGetCurrentAppointmentByUserId(@PathVariable String userId) {
+        try {
+            log.info("/appointments/doctor/currentAppointment/{} ---- get current appointment of user", userId);
+            // Lấy cuộc hẹn mới nhất
+            Optional<Appointment> currentAppointment = appointmentService.getCurrentAppointmentByUserId(userId);
+
+            if (currentAppointment.isPresent()) {
+                return ResponseEntity.ok(currentAppointment.get());
+            }
+            return ResponseEntity.ok("No appointments found for the userId.");
+        } catch (Exception e) {
+            log.error("/appointments/doctor/past/{} error: {}", userId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/doctor/futureAppointment/{userId}")
+    public ResponseEntity<?> getFutureAppointmentByUserId(@PathVariable String userId) {
+        try {
+            log.info("/appointments/doctor/futureAppointment/{} ---- get future appointment of user", userId);
+            Optional<Appointment> futureAppointment = appointmentService.getFutureAppointmentByUserId(userId);
+
+            if (futureAppointment.isPresent()) {
+                return ResponseEntity.ok(futureAppointment.get());
+            }
+
+            return ResponseEntity.ok("No appointments found for the userId.");
+        } catch (Exception e) {
+            log.error("/appointments/doctor/futureAppointment error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }
