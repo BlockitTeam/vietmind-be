@@ -2,6 +2,7 @@ package com.vm.service.impl;
 
 import com.vm.dto.AppointmentEventDTO;
 import com.vm.dto.UserDoctorDTO;
+import com.vm.enums.AppointmentStatus;
 import com.vm.model.Appointment;
 import com.vm.model.Conversation;
 import com.vm.model.User;
@@ -18,10 +19,13 @@ import javax.crypto.SecretKey;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,7 +93,28 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Optional<Appointment> getAppointmentByUserId(String userId) {
-        return appointmentRepository.findTopByUserIdOrderByAppointmentIdDesc(userId);
+//        return appointmentRepository.findTopByUserIdOrderByAppointmentIdDesc(userId);
+
+        Optional<Appointment> appointmentOptional = appointmentRepository.findTopByUserIdOrderByAppointmentIdDesc(userId);
+        appointmentOptional.ifPresent(appointment -> {
+            LocalDateTime now = LocalDateTime.now();
+
+            // Chuyển đổi thành LocalDateTime để so sánh
+            LocalDateTime appointmentStart = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
+            LocalDateTime appointmentEnd = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getEndTime());
+
+            // Cập nhật trạng thái dựa trên thời gian hiện tại
+            if (now.isAfter(appointmentEnd)) {
+                appointment.setStatus(AppointmentStatus.FINISH);
+            } else if (now.isAfter(appointmentStart) && now.isBefore(appointmentEnd)) {
+                appointment.setStatus(AppointmentStatus.IN_PROGRESS);
+            }
+
+            // Lưu thay đổi vào database nếu trạng thái được cập nhật
+            appointmentRepository.save(appointment);
+        });
+
+        return appointmentOptional;
     }
 
     @Override
