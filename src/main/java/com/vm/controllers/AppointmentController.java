@@ -149,7 +149,7 @@ public class AppointmentController {
         }
     }
 
-    @PostMapping("/doctor/create")
+    @PostMapping("/doctor")
     public ResponseEntity<?> doctorCreateAppointment(@RequestBody Appointment appointment) {
         try {
             log.info("/appointment/doctor/ create ---- ");

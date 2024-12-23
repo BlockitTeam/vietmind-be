@@ -194,66 +194,74 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Appointment doctorCreateAppointment(Appointment appointment) {
-        String userId = appointment.getUserId();
-        // Lấy cuộc hẹn hiện tại hoặc đang diễn ra
-        Optional<Appointment> currentAppointment = getCurrentAppointmentByUserId(userId);
+        //Create new Appointment
+        if (appointment.getAppointmentId() == null) {
+            String userId = appointment.getUserId();
+            // Lấy cuộc hẹn hiện tại hoặc đang diễn ra
+            Optional<Appointment> currentAppointment = getCurrentAppointmentByUserId(userId);
 
-        if (currentAppointment.isPresent()) {
-            Appointment current = currentAppointment.get();
+            if (currentAppointment.isPresent()) {
+                Appointment current = currentAppointment.get();
 
-            // Thời điểm hiện tại
-            LocalDateTime now = LocalDateTime.now();
+                // Thời điểm hiện tại
+                LocalDateTime now = LocalDateTime.now();
 
-            // Tính thời điểm bắt đầu và kết thúc của cuộc hẹn hiện tại
-            LocalDateTime currentAppointmentStartTime = LocalDateTime.of(
-                    current.getAppointmentDate(),
-                    current.getStartTime()
-            );
-            LocalDateTime currentAppointmentEndTime = LocalDateTime.of(
-                    current.getAppointmentDate(),
-                    current.getEndTime()
-            );
-
-            // Kiểm tra nếu cuộc hẹn hiện tại chưa diễn ra
-            if (currentAppointmentStartTime.isAfter(now)) {
-                throw new IllegalStateException(
-                        "The user already has an upcoming appointment. Cannot create a new one."
+                // Tính thời điểm bắt đầu và kết thúc của cuộc hẹn hiện tại
+                LocalDateTime currentAppointmentStartTime = LocalDateTime.of(
+                        current.getAppointmentDate(),
+                        current.getStartTime()
                 );
+                LocalDateTime currentAppointmentEndTime = LocalDateTime.of(
+                        current.getAppointmentDate(),
+                        current.getEndTime()
+                );
+
+                // Kiểm tra nếu cuộc hẹn hiện tại chưa diễn ra
+                if (currentAppointmentStartTime.isAfter(now)) {
+                    throw new IllegalStateException(
+                            "The user already has an upcoming appointment. Cannot create a new one."
+                    );
+                }
+
+                // Thời điểm bắt đầu của cuộc hẹn mới
+                LocalDateTime newAppointmentStartTime = LocalDateTime.of(
+                        appointment.getAppointmentDate(),
+                        appointment.getStartTime()
+                );
+
+                // Kiểm tra nếu thời gian cuộc hẹn mới <= thời gian kết thúc của cuộc hẹn hiện tại
+                if (!newAppointmentStartTime.isAfter(currentAppointmentEndTime)) {
+                    throw new IllegalStateException(
+                            "The new appointment must be scheduled after the current appointment ends."
+                    );
+                }
             }
 
-            // Thời điểm bắt đầu của cuộc hẹn mới
-            LocalDateTime newAppointmentStartTime = LocalDateTime.of(
-                    appointment.getAppointmentDate(),
-                    appointment.getStartTime()
-            );
+            // Lấy cuộc hẹn sắp tới
+            Optional<Appointment> futureAppointment = getFutureAppointmentByUserId(userId);
 
-            // Kiểm tra nếu thời gian cuộc hẹn mới <= thời gian kết thúc của cuộc hẹn hiện tại
-            if (!newAppointmentStartTime.isAfter(currentAppointmentEndTime)) {
-                throw new IllegalStateException(
-                        "The new appointment must be scheduled after the current appointment ends."
-                );
-            }
-        }
+            boolean beAbleHaveFutureAppointment = false;
 
 
-        // Lấy cuộc hẹn sắp tới
-        Optional<Appointment> futureAppointment = getFutureAppointmentByUserId(userId);
-
-        boolean beAbleHaveFutureAppointment = false;
-
-
-        if (futureAppointment.isPresent()) {
-            if (currentAppointment.isPresent()
-                    && currentAppointment.get().getAppointmentId().equals(futureAppointment.get().getAppointmentId())) {
-                // Nếu futureAppointment giống currentAppointment, trả về Not Found
+            if (futureAppointment.isPresent()) {
+                if (currentAppointment.isPresent()
+                        && currentAppointment.get().getAppointmentId().equals(futureAppointment.get().getAppointmentId())) {
+                    // Nếu futureAppointment giống currentAppointment, trả về Not Found
+                    beAbleHaveFutureAppointment = true;
+                }
+            } else
                 beAbleHaveFutureAppointment = true;
-            }
-        } else
-            beAbleHaveFutureAppointment = true;
 
-        if (!beAbleHaveFutureAppointment) {
-            throw new IllegalStateException("Cannot create a future appointment for this user.");
+            if (!beAbleHaveFutureAppointment) {
+                throw new IllegalStateException("Cannot create a future appointment for this user.");
+            }
+            return appointmentRepository.save(appointment);
+        } else {
+            if (AppointmentStatus.CANCELLED.equals(appointment.getStatus()))
+                appointmentRepository.deleteByAppointmentId(appointment.getAppointmentId());
         }
+
+        //Update status
         return appointmentRepository.save(appointment);
     }
 

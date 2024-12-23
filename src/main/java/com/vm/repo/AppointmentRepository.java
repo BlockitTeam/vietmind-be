@@ -26,6 +26,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Xóa tất cả cuộc hẹn theo userId
     void deleteByUserId(String userId);
 
+    // Xóa cuộc hẹn theo id
+    void deleteByAppointmentId(Integer appointmentId);
+
     // Lấy lịch hẹn theo doctorId
     List<Appointment> findAllByDoctorId(String doctorId);
 
