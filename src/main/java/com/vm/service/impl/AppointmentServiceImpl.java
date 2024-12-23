@@ -193,6 +193,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Transactional
     public Appointment doctorCreateAppointment(Appointment appointment) {
         //Create new Appointment
         if (appointment.getAppointmentId() == null) {
