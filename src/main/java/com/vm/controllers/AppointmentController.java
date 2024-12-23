@@ -115,7 +115,7 @@ public class AppointmentController {
             if (currentAppointment.isPresent()) {
                 return ResponseEntity.ok(currentAppointment.get());
             }
-            return ResponseEntity.ok("No appointments found for the userId.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No appointments found for the userId.");
         } catch (Exception e) {
             log.error("/appointments/doctor/past/{} error: {}", userId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
