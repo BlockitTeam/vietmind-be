@@ -149,7 +149,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         LocalDate currentDate = LocalDate.now();
         LocalTime currentTime = LocalTime.now();
 
-        Optional<Appointment> appointmentOpt = appointmentRepository.findCurrentOrUpcomingAppointment(userId, currentDate, currentTime);
+        // Query lấy cuộc hẹn đang diễn ra
+        Optional<Appointment> appointmentOpt = appointmentRepository.findCurrentAppointment(userId, currentDate, currentTime);
+        if (!appointmentOpt.isPresent()) {
+            //Query lấy cuộc hẹn sắp tới
+            appointmentOpt = appointmentRepository.findUpcomingAppointment(userId, currentDate, currentTime);
+        }
 
         appointmentOpt.ifPresent(appointment -> {
             if (appointment.getAppointmentDate().isEqual(currentDate) &&
