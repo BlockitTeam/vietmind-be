@@ -43,14 +43,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public UserDoctorDTO createAppointment(Appointment appointment) throws Exception {
-//        Integer appointmentId = appointment.getAppointmentId();
-//        if (appointmentId == null) {
-//            Integer conversationId = appointment.getConversationId();
-//            Appointment appointmentExist = getAppointmentByConversationId(conversationId);
-//            if (appointmentExist != null)
-//                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
-//        }
-
         Conversation conversation = conversationService.getConversationByUserIdAndDoctorId(appointment.getUserId(), appointment.getDoctorId());
         Integer conversationId;
 
@@ -160,8 +152,24 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public List<Appointment> getFinishedAppointmentsByUserId(String userId) {
-        return appointmentRepository.findAllByStatusAndUserId(AppointmentStatus.FINISH, userId);
+        LocalDate currentDate = LocalDate.now();
+        LocalTime currentTime = LocalTime.now();
+
+        // Lấy tất cả các cuộc hẹn FINISH hoặc đã qua thời gian hiện tại
+        List<Appointment> appointments = appointmentRepository.findAllFinishedOrPastAppointments(
+                AppointmentStatus.FINISH, userId, currentDate, currentTime
+        );
+
+        // Cập nhật trạng thái tất cả các cuộc hẹn thành FINISH nếu chưa phải
+        appointments.forEach(appointment -> {
+            if (appointment.getStatus() != AppointmentStatus.FINISH) {
+                appointment.setStatus(AppointmentStatus.FINISH);
+                appointmentRepository.save(appointment); // Lưu thay đổi
+            }
+        });
+        return appointments;
     }
 
     @Override
@@ -295,6 +303,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Transactional
     public Appointment updateAppointment(Appointment appointment) {
         Appointment existAppointment = appointmentRepository.findByAppointmentId(appointment.getAppointmentId())
                 .orElseThrow(() -> new NoSuchElementException("Appointment with ID " + appointment.getAppointmentId() + " not found"));

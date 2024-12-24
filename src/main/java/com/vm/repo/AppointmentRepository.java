@@ -41,6 +41,19 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Lấy tất cả cuộc hẹn FINISH theo userId
     List<Appointment> findAllByStatusAndUserId(AppointmentStatus status, String userId);
 
+    //tìm các cuộc hẹn đã có trạng thái FINISH hoặc có appointmentDate + endTime < thời điểm hiện tại
+    @Query("SELECT a FROM Appointment a " +
+            "WHERE a.status = :status " +
+            "AND a.userId = :userId " +
+            "OR (a.userId = :userId AND " +
+            "(a.appointmentDate < :currentDate OR " +
+            "(a.appointmentDate = :currentDate AND a.endTime < :currentTime)))")
+    List<Appointment> findAllFinishedOrPastAppointments(
+            @Param("status") AppointmentStatus status,
+            @Param("userId") String userId,
+            @Param("currentDate") LocalDate currentDate,
+            @Param("currentTime") LocalTime currentTime);
+
     // Lấy cuộc hẹn có id lớn nhất của user và trước thời gian hiện tại
     Optional<Appointment> findTopByUserIdAndAppointmentDateBeforeAndEndTimeBeforeOrderByAppointmentIdDesc(
             String userId,

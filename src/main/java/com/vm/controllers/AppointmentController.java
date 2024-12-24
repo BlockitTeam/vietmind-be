@@ -39,7 +39,10 @@ public class AppointmentController {
     @PutMapping("")
     public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment) {
         try {
-            log.info("/appointments update ---- ");
+            log.info("/appointments create/update ---- ");
+            if (appointment.getAppointmentId() == null)
+                return ResponseEntity.ok(appointmentService.createAppointment(appointment));
+
             return ResponseEntity.ok(appointmentService.updateAppointment(appointment));
         }  catch (Exception e) {
             log.error("/appointments update error: {}", e.getMessage(), e);
