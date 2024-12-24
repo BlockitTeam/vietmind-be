@@ -258,8 +258,10 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
             return appointmentRepository.save(appointment);
         } else {
-            if (AppointmentStatus.CANCELLED.equals(appointment.getStatus()))
+            if (AppointmentStatus.CANCELLED.equals(appointment.getStatus())) {
                 appointmentRepository.deleteByAppointmentId(appointment.getAppointmentId());
+                return appointment;
+            }
         }
 
         //Update status
