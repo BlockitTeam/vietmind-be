@@ -46,17 +46,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             LocalTime currentTime
     );
 
-//    @Query("SELECT a FROM Appointment a " +
-//            "WHERE a.userId = :userId " +
-//            "AND ((a.appointmentDate = :currentDate AND a.startTime <= :currentTime AND a.endTime >= :currentTime) " +
-//            "OR (a.appointmentDate > :currentDate OR (a.appointmentDate = :currentDate AND a.startTime > :currentTime))) " +
-//            "ORDER BY a.appointmentDate ASC, a.startTime ASC")
-//    Optional<Appointment> findCurrentOrUpcomingAppointment(
-//            @Param("userId") String userId,
-//            @Param("currentDate") LocalDate currentDate,
-//            @Param("currentTime") LocalTime currentTime);
-
-
     @Query("SELECT a FROM Appointment a " +
             "WHERE a.userId = :userId " +
             "AND a.appointmentDate = :currentDate " +
@@ -77,6 +66,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("currentDate") LocalDate currentDate,
             @Param("currentTime") LocalTime currentTime);
 
+    @Query("SELECT a FROM Appointment a " +
+            "WHERE a.userId = :userId " +
+            "AND (a.appointmentDate < :currentDate " +
+            "OR (a.appointmentDate = :currentDate AND a.endTime < :currentTime)) " +
+            "ORDER BY a.appointmentId DESC")
+    Optional<Appointment> findLatestCompletedAppointment(
+            @Param("userId") String userId,
+            @Param("currentDate") LocalDate currentDate,
+            @Param("currentTime") LocalTime currentTime);
 
     // Lấy cuộc hẹn có ngày lớn hơn ngày hiện tại
     List<Appointment> findByUserIdAndAppointmentDateGreaterThanOrderByAppointmentIdDesc(

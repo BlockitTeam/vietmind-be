@@ -152,8 +152,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Query lấy cuộc hẹn đang diễn ra
         Optional<Appointment> appointmentOpt = appointmentRepository.findCurrentAppointment(userId, currentDate, currentTime);
         if (!appointmentOpt.isPresent()) {
-            //Query lấy cuộc hẹn sắp tới
-            appointmentOpt = appointmentRepository.findUpcomingAppointment(userId, currentDate, currentTime);
+            //Query lấy cuộc hẹn gần nhất đã finish
+            appointmentOpt = appointmentRepository.findLatestCompletedAppointment(userId, currentDate, currentTime);
+            appointmentOpt.ifPresent(appointment -> {
+                //Change status finish luôn
+                appointment.setStatus(AppointmentStatus.FINISH);
+                appointmentRepository.save(appointment);
+            });
         }
 
         appointmentOpt.ifPresent(appointment -> {
