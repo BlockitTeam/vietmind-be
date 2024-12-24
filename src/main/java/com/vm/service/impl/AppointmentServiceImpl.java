@@ -87,7 +87,28 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Appointment getAppointmentByConversationId(Integer id) {
-        return appointmentRepository.findByConversationId(id);
+        String userId = conversationService.getConversationById(id).get().getUserId();
+        LocalDateTime now = LocalDateTime.now(); // Lấy thời gian hiện tại
+        LocalDate currentDate = now.toLocalDate();
+        LocalTime currentTime = now.toLocalTime();
+
+        // Lấy danh sách cuộc hẹn lớn hơn ngày hiện tại
+        List<Appointment> futureAppointmentsByDate =
+                appointmentRepository.findByUserIdAndAppointmentDateGreaterThanOrderByAppointmentIdDesc(userId, currentDate);
+
+        // Lấy danh sách cuộc hẹn trong ngày nhưng có thời gian lớn hơn hiện tại
+        List<Appointment> futureAppointmentsByTime =
+                appointmentRepository.findByUserIdAndAppointmentDateEqualsAndStartTimeGreaterThanOrderByAppointmentIdDesc(userId, currentDate, currentTime);
+
+        // Kết hợp hai danh sách
+        List<Appointment> allFutureAppointments = new ArrayList<>();
+        allFutureAppointments.addAll(futureAppointmentsByDate);
+        allFutureAppointments.addAll(futureAppointmentsByTime);
+
+        // Lấy appointment có id lớn nhất
+        return allFutureAppointments.stream()
+                .max(Comparator.comparing(Appointment::getAppointmentId)).get();
+//        return appointmentRepository.findByConversationId(id);
     }
 
     @Override
@@ -271,6 +292,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         //Update status
         return appointmentRepository.save(appointment);
+    }
+
+    @Override
+    public Appointment updateAppointment(Appointment appointment) {
+        Appointment existAppointment = appointmentRepository.findByAppointmentId(appointment.getAppointmentId())
+                .orElseThrow(() -> new NoSuchElementException("Appointment with ID " + appointment.getAppointmentId() + " not found"));
+        existAppointment.setStatus(appointment.getStatus());
+        return appointmentRepository.save(existAppointment);
     }
 
     private String formatDateTime(LocalDate date, LocalTime time, DateTimeFormatter formatter) {

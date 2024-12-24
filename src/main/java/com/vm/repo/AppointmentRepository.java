@@ -20,6 +20,8 @@ import java.util.Optional;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     Appointment findByConversationId(Integer conversationId);
 
+    Optional<Appointment> findByAppointmentId(Integer appointmentId);
+
     // Lấy cuộc hẹn có id lớn nhất cho một userId cụ thể
     Optional<Appointment> findTopByUserIdOrderByAppointmentIdDesc(String userId);
 

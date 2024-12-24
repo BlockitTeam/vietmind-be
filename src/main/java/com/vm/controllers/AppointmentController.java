@@ -40,7 +40,7 @@ public class AppointmentController {
     public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment) {
         try {
             log.info("/appointments update ---- ");
-            return ResponseEntity.ok(appointmentService.createAppointment(appointment));
+            return ResponseEntity.ok(appointmentService.updateAppointment(appointment));
         }  catch (Exception e) {
             log.error("/appointments update error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
