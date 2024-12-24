@@ -299,6 +299,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment existAppointment = appointmentRepository.findByAppointmentId(appointment.getAppointmentId())
                 .orElseThrow(() -> new NoSuchElementException("Appointment with ID " + appointment.getAppointmentId() + " not found"));
         existAppointment.setStatus(appointment.getStatus());
+
+        if (AppointmentStatus.CANCELLED.equals(appointment.getStatus())) {
+            appointmentRepository.deleteByAppointmentId(appointment.getAppointmentId());
+            return appointment;
+        }
         return appointmentRepository.save(existAppointment);
     }
 
