@@ -203,4 +203,10 @@ public class UserService {
 			throw new IllegalArgumentException("No user found with the provided ID");
 		}
 	}
+
+	public Integer getSurveyDetail() {
+		UUID currentUserId = getCurrentUUID();
+		User user = userRepo.findById(currentUserId).get();
+		return user.getSurveyDetailId();
+	}
 }
