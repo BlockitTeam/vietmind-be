@@ -103,9 +103,6 @@ public class AvailabilityController {
         try {
             log.info("/available-by-date --- ");
             List<AvailabilityDTO> availabilities = availabilityService.getAvailableShiftsByDate(date);
-            if (availabilities.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
             return ResponseEntity.ok(availabilities);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);

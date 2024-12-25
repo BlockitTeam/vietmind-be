@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,9 +79,14 @@ public class AvailabilityService {
             LocalDate date = LocalDate.parse(dateStr);
             int dayOfWeek = date.getDayOfWeek().getValue(); // 1 = Monday, ..., 7 = Sunday
             List<Availability> availabilities = availabilityRepository.findByDayOfWeek(dayOfWeek);
+            LocalDateTime now = LocalDateTime.now();
 
-            // Chuyển đổi danh sách `Availability` sang `AvailabilityDTO`
+            // Chuyển đổi danh sách `Availability` sang `AvailabilityDTO` với điều kiện lọc
             return availabilities.stream()
+                    .filter(availability -> {
+                        LocalDateTime availabilityStart = LocalDateTime.of(date, availability.getStartTime());
+                        return availabilityStart.isAfter(now);
+                    })
                     .map(availability -> new AvailabilityDTO(availability, dateStr))
                     .collect(Collectors.toList());
         } catch (DateTimeParseException e) {
