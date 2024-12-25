@@ -1,6 +1,8 @@
 package com.vm.service.impl;
 
 import com.vm.model.Response;
+import com.vm.model.Survey;
+import com.vm.model.User;
 import com.vm.repo.OptionRepository;
 import com.vm.repo.ResponseRepository;
 import com.vm.repo.SurveyRepository;
@@ -13,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -200,6 +203,27 @@ public class ResponseServiceImpl implements ResponseService {
 	@Override
 	public void deleteResponses(String userId) {
 		responseRepo.deleteAllByEmployeeIdIn(userId);
+	}
+
+	@Override
+	public Map<String, String> getNameOfSurveyDetailByUserId(String userId) {
+		// Lấy thông tin User
+		User user = userService.getUserById(userId);
+		Integer surveyDetailId = user.getSurveyDetailId();
+
+		// Lấy tên survey từ surveyId
+		String surveyName = surveyRepository.findBySurveyId(surveyDetailId)
+				.map(Survey::getTitle) // Nếu survey tồn tại, lấy title
+				.orElse(null); // Nếu không tồn tại, trả về null
+
+		// Tạo giá trị ngày hiện tại
+		String currentDate = LocalDate.now().toString(); // Format: yyyy-MM-dd
+
+		// Tạo Map kết quả
+		Map<String, String> result = new HashMap<>();
+		result.put("surveyName", surveyName);
+		result.put("date", currentDate);
+		return result;
 	}
 
 //    @Override

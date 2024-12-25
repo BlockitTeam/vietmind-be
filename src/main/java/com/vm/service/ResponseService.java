@@ -17,4 +17,6 @@ public interface ResponseService {
 //	public void deleteResponses(Long survey_id);
 
 	public void deleteResponses(String userId);
+
+	Map<String, String> getNameOfSurveyDetailByUserId(String userId);
 }

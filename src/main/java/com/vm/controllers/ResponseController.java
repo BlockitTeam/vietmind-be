@@ -1,5 +1,6 @@
 package com.vm.controllers;
 
+import com.vm.model.Survey;
 import com.vm.request.QuestionObject;
 import com.vm.service.AppointmentService;
 import com.vm.service.ResponseService;
@@ -68,6 +69,45 @@ public class ResponseController {
         } catch (Exception e) {
             log.error("/resultDetail error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("resultDetailByUserId/{user_id}")
+    public ResponseEntity<?> getResultDetailByUserId(@PathVariable("user_id") String userId) {
+        try {
+            log.info("/resultDetailByUserId ---- : ");
+            List<QuestionObject> result = responseService.getResultDetail(userId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("/resultDetailByUserId error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("getNameOfSurveyDetailByUserId/{user_id}")
+    public ResponseEntity<?> getNameOfSurveyDetailByUserId(@PathVariable("user_id") String userId) {
+        try {
+            log.info("/getNameOfSurveyDetailByUserId ---- : ");
+            Map<String, String> result = responseService.getNameOfSurveyDetailByUserId(userId);
+
+            // Kiểm tra giá trị surveyName trong result
+            String surveyName = result.get("surveyName");
+            if (surveyName == null) {
+                log.warn("Survey name not found for userId: {}", userId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                        "status", "NOT_FOUND",
+                        "message", "Survey not found for the given user.",
+                        "userId", userId
+                ));
+            }
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("/getNameOfSurveyDetailByUserId error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "ERROR",
+                    "message", e.getMessage()
+            ));
         }
     }
 
