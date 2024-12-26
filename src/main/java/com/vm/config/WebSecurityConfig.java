@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -103,6 +104,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .accessDeniedHandler(accessDeniedHandler) // Set custom access denied handler
                 .authenticationEntryPoint(authenticationEntryPoint()); // Set custom authentication entry point
         ;
+
+        // Cấu hình timeout session
+        http.sessionManagement()
+                .sessionFixation().migrateSession()
+                .maximumSessions(1)
+                .and()
+                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
     }
 
     @Bean
