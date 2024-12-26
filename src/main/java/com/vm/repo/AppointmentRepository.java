@@ -81,11 +81,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("currentDate") LocalDate currentDate,
             @Param("currentTime") LocalTime currentTime);
 
-    @Query("SELECT a FROM Appointment a " +
-            "WHERE a.userId = :userId " +
-            "AND (a.appointmentDate < :currentDate " +
-            "OR (a.appointmentDate = :currentDate AND a.endTime < :currentTime)) " +
-            "ORDER BY a.appointmentId DESC")
+    @Query(value = "SELECT * FROM appointments a " +
+            "WHERE a.user_id = :userId " +
+            "AND (a.appointment_date < :currentDate " +
+            "OR (a.appointment_date = :currentDate AND a.end_time < :currentTime)) " +
+            "ORDER BY a.appointment_id DESC LIMIT 1",
+            nativeQuery = true)
     Optional<Appointment> findLatestCompletedAppointment(
             @Param("userId") String userId,
             @Param("currentDate") LocalDate currentDate,
