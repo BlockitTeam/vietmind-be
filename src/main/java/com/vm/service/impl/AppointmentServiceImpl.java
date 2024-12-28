@@ -13,8 +13,6 @@ import com.vm.service.ConversationService;
 import com.vm.util.KeyManagement;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -78,7 +76,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Appointment getAppointmentByConversationId(Integer id) {
+    public Object getAppointmentByConversationId(Integer id) {
         String userId = conversationService.getConversationById(id).get().getUserId();
         LocalDateTime now = LocalDateTime.now(); // Lấy thời gian hiện tại
         LocalDate currentDate = now.toLocalDate();
@@ -98,9 +96,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         allFutureAppointments.addAll(futureAppointmentsByTime);
 
         // Lấy appointment có id lớn nhất
-        return allFutureAppointments.stream()
-                .max(Comparator.comparing(Appointment::getAppointmentId)).get();
-//        return appointmentRepository.findByConversationId(id);
+        if (!allFutureAppointments.isEmpty())
+            return allFutureAppointments.stream().max(Comparator.comparing(Appointment::getAppointmentId)).get();
+
+        return "No appointments found for the current user.";
     }
 
     @Override
