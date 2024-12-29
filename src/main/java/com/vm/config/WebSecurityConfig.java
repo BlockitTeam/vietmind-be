@@ -130,7 +130,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://91.108.104.57", "http://localhost:3000")); // Adjust this as per your frontend origin
+        configuration.setAllowedOrigins(Arrays.asList("http://91.108.104.57", "http://localhost:3000", "http://vietmind.chat")); // Adjust this as per your frontend origin
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         configuration.setAllowCredentials(true); // This is important to allow credentials (cookies) to be sent
