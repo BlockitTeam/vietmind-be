@@ -1,5 +1,7 @@
 package com.vm.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.vm.constant.Provider;
 import com.vm.model.AuthResponse;
 import com.vm.util.TokenStore;
@@ -81,8 +83,20 @@ public class FacebookAuthService {
             attributes.put("email", userEmail);
 
             return attributes;
+        } else if (response.statusCode() == 400) {
+            //Try another way due to token from IOS
+            DecodedJWT decodedJWT = JWT.decode(userToken);
+            String userId = decodedJWT.getClaim("sub").asString();
+            String userName = decodedJWT.getClaim("name").asString();
+            String userEmail = decodedJWT.getClaim("email").asString();
+
+            JSONObject attributes = new JSONObject();
+            attributes.put("id", userId);
+            attributes.put("name", userName);
+            attributes.put("email", userEmail);
+            return attributes;
         } else {
-            throw new IOException("Failed to verify user token, response code: " + response.statusCode());
+                throw new IOException("Failed to verify user token, response code: " + response.statusCode());
         }
     }
 
