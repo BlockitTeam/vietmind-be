@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.vm.constant.Provider;
 import com.vm.model.AuthResponse;
+import com.vm.util.FacebookUtils;
 import com.vm.util.TokenStore;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -29,8 +30,8 @@ import java.util.Collections;
 @Service
 public class FacebookAuthService {
 
-    private static final String CLIENT_ID = "1547044715861002";
-    private static final String CLIENT_SECRET = "1068fc4d217f914d44f50a4e7be9c79e";
+    private static final String CLIENT_ID = "1677651809436240";
+    private static final String CLIENT_SECRET = "4d15eb4e74e54bfe75bfdfb146e7fe8f";
     private static final String USER_INFO_URL = "https://graph.facebook.com/me?fields=id,name,email&access_token=";
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -61,8 +62,14 @@ public class FacebookAuthService {
     }
 
     public JSONObject verifyToken(String userToken) throws IOException, InterruptedException {
-        String appAccessToken = getAppAccessToken();
-        String verifyUrl = USER_INFO_URL + URLEncoder.encode(userToken, StandardCharsets.UTF_8);
+        // Tạo appsecret_proof
+        String appSecretProof = FacebookUtils.generateAppSecretProof(userToken, CLIENT_SECRET);
+
+        // Tạo URL với appsecret_proof
+        String verifyUrl = String.format("https://graph.facebook.com/me?fields=id,name,email&access_token=%s&appsecret_proof=%s",
+                userToken,
+                appSecretProof);
+//        String verifyUrl = USER_INFO_URL + URLEncoder.encode(userToken, StandardCharsets.UTF_8);
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
