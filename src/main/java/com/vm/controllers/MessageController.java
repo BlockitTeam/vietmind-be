@@ -30,14 +30,14 @@ public class MessageController {
         }
     }
 
-    @PostMapping("/markMessageIsReadByCoverId/{conversation_id}")
-    public ResponseEntity<?> markMessageIsReadByCoverId(@PathVariable Integer conversation_id) throws Exception {
+    @PostMapping("/markMessageIsReadByConverId/{conversation_id}")
+    public ResponseEntity<?> markMessageIsReadByConverId(@PathVariable Integer conversation_id) throws Exception {
         try {
-            log.info("/markMessageIsReadByCoverId: {}", conversation_id);
+            log.info("/markMessageIsReadByConverId: {}", conversation_id);
             messageService.markMessageIsReadByConverId(conversation_id);
             return ResponseEntity.ok("Mark message is read successfully");
         }   catch (Exception e) {
-            log.error("/markMessageIsReadByCoverId by id  error: {}", e.getMessage(), e);
+            log.error("/markMessageIsReadByConverId by id  error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
