@@ -63,7 +63,6 @@ public class ConversationServiceImpl implements ConversationService {
         List<Integer> conversationIds= conversations.stream()
                     .map(dto -> dto.getConversation().getConversationId())
                     .collect(Collectors.toList());
-
         Map<Integer, Long> mapConverWithUnread = getUnreadMessagesCountByConversations(conversationIds, userId);
         conversations.forEach(dto -> {
             Integer conversationId = dto.getConversation().getConversationId();

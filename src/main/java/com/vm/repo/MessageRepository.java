@@ -29,4 +29,9 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
             @Param("conversationIds") List<Integer> conversationIds,
             @Param("receiverId") String receiverId
     );
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Message m SET m.isRead = true WHERE m.conversationId = :conversationId")
+    void markMessagesAsReadByConverId(@Param("conversationId") Integer conversationId);
 }
