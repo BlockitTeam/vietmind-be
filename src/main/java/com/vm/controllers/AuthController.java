@@ -3,6 +3,7 @@ package com.vm.controllers;
 import com.vm.model.AuthResponse;
 import com.vm.request.LoginRequest;
 import com.vm.request.TokenRequest;
+import com.vm.service.AppleAuthService;
 import com.vm.service.FacebookAuthService;
 import com.vm.service.GoogleTokenVerifier;
 import com.vm.service.UserService;
@@ -40,6 +41,9 @@ public class AuthController {
     private FacebookAuthService facebookAuthService;
 
     @Autowired
+    private AppleAuthService appleAuthService;
+
+    @Autowired
     private UserDetailsService userDetailsService;
 
     @Autowired
@@ -69,6 +73,8 @@ public class AuthController {
                     return ResponseEntity.ok(googleTokenVerifier.authenticate(token, tokenStore));
                 case "facebook":
                     return ResponseEntity.ok(facebookAuthService.authenticate(token, tokenStore));
+                case "apple":
+                    return ResponseEntity.ok(appleAuthService.authenticate(token, tokenStore));
                 default:
                     return ResponseEntity.badRequest().body("Unsupported provider");
             }
