@@ -137,4 +137,15 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/apple/callback")
+    public ResponseEntity<?> appleAuthCallback(@RequestParam(required = false) String code) {
+        if (code == null || code.isEmpty()) {
+            return ResponseEntity.badRequest().body("Missing authorization code");
+        }
+
+        // ✅ Redirect về app với code
+        String redirectUrl = "com.vietmind_mobile://callback?code=" + code;
+        return ResponseEntity.status(302).header("Location", redirectUrl).build();
+    }
 }
