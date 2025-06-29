@@ -45,6 +45,18 @@ public class AvailabilityController {
         }
     }
 
+    @PostMapping("/clear")
+    public ResponseEntity<?> clearAvailabilities() {
+        try {
+            log.info("/api/v1/clear availabilities --- ");
+            availabilityService.clearAvailabilities(userService.getStringCurrentUserId());
+            return ResponseEntity.ok("Clear availabilities successfully");
+        } catch (Exception e) {
+            log.error("/api/v1/clear availabilities save error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     /**
      * Endpoint để lấy lịch làm việc của bác sĩ.
      *

@@ -48,6 +48,11 @@ public class AvailabilityService {
         return availabilityRepository.saveAll(availabilities);
     }
 
+    public void clearAvailabilities(String userId) {
+        // Xóa các Availability hiện tại của bác sĩ
+        availabilityRepository.deleteAll(availabilityRepository.findByUserId(userId));
+    }
+
     /**
      * Lấy danh sách Availability của một bác sĩ.
      *
