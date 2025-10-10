@@ -63,6 +63,10 @@ public class User {
 	@Column(name = "specializations")
 	private String specializations; // e.g., "2,3,4" cho nhiều survey_id
 
+	// Field for push notifications
+	@Column(name = "device_token")
+	private String deviceToken;
+
 	@Getter
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(
@@ -74,5 +78,24 @@ public class User {
 
 	public boolean hasRoleDoctor() {
 		return roles.stream().anyMatch(role -> "ROLE_DOCTOR".equals(role.getName()));
+	}
+
+	public String getFullName() {
+		if (firstName != null && lastName != null) {
+			return firstName + " " + lastName;
+		} else if (firstName != null) {
+			return firstName;
+		} else if (lastName != null) {
+			return lastName;
+		}
+		return username;
+	}
+
+	public String getEmail() {
+		return username; // Assuming username is email in this system
+	}
+
+	public String getUserId() {
+		return id != null ? id.toString() : null;
 	}
 }
