@@ -8,9 +8,7 @@ import com.vm.model.Conversation;
 import com.vm.model.User;
 import com.vm.repo.AppointmentRepository;
 import com.vm.repo.UserRepository;
-import com.vm.service.AppointmentService;
-import com.vm.service.ConversationService;
-import com.vm.service.JobSchedulerService;
+import com.vm.service.*;
 import com.vm.util.KeyManagement;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +40,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
     private JobSchedulerService jobSchedulerService;
+
+    @Autowired
+    private PushNotificationService pushNotificationService;
+    private UserService userService;
 
     @Override
     public UserDoctorDTO createAppointment(Appointment appointment) throws Exception {
@@ -238,6 +240,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     public Appointment doctorCreateAppointment(Appointment appointment) {
         //Create new Appointment
+        User userDetails = userService.getUserById(appointment.getUserId());
         if (appointment.getAppointmentId() == null) {
             String userId = appointment.getUserId();
             // Lấy cuộc hẹn hiện tại hoặc đang diễn ra
@@ -303,6 +306,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             // Schedule reminder jobs for the new appointment
             LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
             jobSchedulerService.scheduleAppointmentReminderJobs(savedAppointment.getAppointmentId().toString(), appointmentDateTime);
+            pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, 0);
             
             return savedAppointment;
         } else {
