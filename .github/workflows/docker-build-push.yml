@@ -72,15 +72,58 @@ jobs:
           username: ${{ env.REGISTRY_USERNAME }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
+      - name: Validate and prepare tags
+        id: tags
+        run: |
+          # Validate required variables
+          if [ -z "${{ env.REGISTRY_URL }}" ]; then
+            echo "Error: REGISTRY_URL is not set"
+            exit 1
+          fi
+          
+          if [ -z "${{ env.IMAGE_NAME }}" ]; then
+            echo "Error: IMAGE_NAME is not set"
+            exit 1
+          fi
+          
+          ENV="${{ needs.determine-environment.outputs.environment }}"
+          TAG="${{ needs.determine-environment.outputs.image_tag }}"
+          
+          # Ensure tag is not empty and sanitize
+          if [ -z "${TAG}" ] || [ "${TAG}" == "null" ]; then
+            TAG="latest"
+          fi
+          
+          # Sanitize tag - remove invalid characters, convert to lowercase
+          TAG=$(echo "${TAG}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]//g')
+          ENV_LOWER=$(echo "${ENV}" | tr '[:upper:]' '[:lower:]')
+          
+          # Ensure tag doesn't start or end with invalid characters
+          TAG=$(echo "${TAG}" | sed 's/^[.-]//;s/[.-]$//')
+          
+          # Validate tag is not empty after sanitization
+          if [ -z "${TAG}" ]; then
+            TAG="latest"
+          fi
+          
+          # Create valid Docker tags (Docker tags must be lowercase)
+          echo "tag1=${TAG}" >> $GITHUB_OUTPUT
+          echo "tag2=${ENV_LOWER}-latest" >> $GITHUB_OUTPUT
+          echo "tag3=${ENV_LOWER}-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          
+          echo "Registry: ${{ env.REGISTRY_URL }}"
+          echo "Image: ${{ env.IMAGE_NAME }}"
+          echo "Prepared tags: ${TAG}, ${ENV_LOWER}-latest, ${ENV_LOWER}-${GITHUB_SHA::7}"
+
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ needs.determine-environment.outputs.image_tag }}
-            type=raw,value=${{ needs.determine-environment.outputs.environment }}-latest
-            type=sha,prefix=${{ needs.determine-environment.outputs.environment }}-
+            type=raw,value=${{ steps.tags.outputs.tag1 }}
+            type=raw,value=${{ steps.tags.outputs.tag2 }}
+            type=raw,value=${{ steps.tags.outputs.tag3 }}
 
       - name: Build and push Docker image
         id: build
