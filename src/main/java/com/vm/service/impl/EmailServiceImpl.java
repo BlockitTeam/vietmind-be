@@ -1,12 +1,17 @@
 package com.vm.service.impl;
 
-import com.sendgrid.Method;
-import com.sendgrid.Request;
-import com.sendgrid.Response;
-import com.sendgrid.SendGrid;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ses.SesClient;
+import software.amazon.awssdk.services.ses.model.Body;
+import software.amazon.awssdk.services.ses.model.Content;
+import software.amazon.awssdk.services.ses.model.Destination;
+import software.amazon.awssdk.services.ses.model.Message;
+import software.amazon.awssdk.services.ses.model.SendEmailRequest;
+import software.amazon.awssdk.services.ses.model.SendEmailResponse;
+import software.amazon.awssdk.services.ses.model.SesException;
 import com.vm.model.Appointment;
 import com.vm.model.User;
 import com.vm.service.EmailService;
@@ -22,14 +27,20 @@ public class EmailServiceImpl implements EmailService {
     
     private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
     
-    @Value("${sendgrid.api.key}")
-    private String sendGridApiKey;
-    
-    @Value("${sendgrid.from.email}")
+    @Value("${aws.ses.region}")
+    private String awsRegion;
+
+    @Value("${aws.ses.from.email}")
     private String fromEmail;
-    
-    @Value("${sendgrid.from.name}")
+
+    @Value("${aws.ses.from.name}")
     private String fromName;
+
+    @Value("${aws.ses.accessKeyId:}")
+    private String accessKeyId;
+
+    @Value("${aws.ses.secretAccessKey:}")
+    private String secretAccessKey;
     
     @Autowired
     private EmailTemplateService emailTemplateService;
@@ -50,31 +61,36 @@ public class EmailServiceImpl implements EmailService {
     
     @Override
     public void sendEmail(String to, String subject, String htmlContent) {
-        try {
-            Email from = new Email(fromEmail, fromName);
-            Email toEmail = new Email(to);
-            Content content = new Content("text/html", htmlContent);
-            Mail mail = new Mail(from, subject, toEmail, content);
-            
-            SendGrid sg = new SendGrid(sendGridApiKey);
-            Request request = new Request();
-            
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-            
-            Response response = sg.api(request);
-            
-            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                logger.info("Email sent successfully to: {}", to);
-            } else {
-                logger.error("Failed to send email to: {}, Status: {}, Body: {}", 
-                    to, response.getStatusCode(), response.getBody());
-            }
-            
-        } catch (Exception e) {
-            logger.error("Error sending email to: {}", to, e);
-            throw new RuntimeException("Failed to send email", e);
+        try (SesClient sesClient = SesClient.builder()
+                .region(Region.of(awsRegion))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(accessKeyId, secretAccessKey)))
+                .build()) {
+
+            Destination destination = Destination.builder()
+                    .toAddresses(to)
+                    .build();
+
+            Content subj = Content.builder().data(subject).build();
+            Content html = Content.builder().data(htmlContent).build();
+            Body body = Body.builder().html(html).build();
+            Message message = Message.builder().subject(subj).body(body).build();
+
+            // If you want a friendly name, use the format: "Name <email@domain>"
+            String source = fromName != null && !fromName.isEmpty() ? (fromName + " <" + fromEmail + ">") : fromEmail;
+
+            SendEmailRequest request = SendEmailRequest.builder()
+                    .destination(destination)
+                    .message(message)
+                    .source(source)
+                    .build();
+
+            SendEmailResponse response = sesClient.sendEmail(request);
+            logger.info("Email sent successfully to: {}. SES MessageId: {}", to, response.messageId());
+
+        } catch (SdkException e) {
+            logger.error("Failed to send email via SES to: {}", to, e);
+            throw new RuntimeException("Failed to send email via SES", e);
         }
     }
     

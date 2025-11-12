@@ -10,6 +10,7 @@ import com.vm.repo.AppointmentRepository;
 import com.vm.repo.UserRepository;
 import com.vm.service.*;
 import com.vm.util.KeyManagement;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,26 +25,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
     @Autowired
     private AppointmentRepository appointmentRepository;
 
-    @Autowired
     private ConversationService conversationService;
 
-    @Autowired
     private UserRepository userRepo;
 
-    @Autowired
     private ModelMapper modelMapper;
 
-    @Autowired
     private JobSchedulerService jobSchedulerService;
 
-    @Autowired
     private PushNotificationService pushNotificationService;
+
     private UserService userService;
+
+    private final EmailService emailService;
 
     @Override
     public UserDoctorDTO createAppointment(Appointment appointment) throws Exception {
@@ -70,9 +70,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         } else {
             conversationId = conversation.getConversationId();
             //conversation already have Appointment
-            Appointment originAppointment = appointmentRepository.findByConversationId(conversationId);
-            if (originAppointment != null)
-                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
+//            Appointment originAppointment = appointmentRepository.findByConversationId(conversationId);
+//            if (originAppointment != null)
+//                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
         }
         appointment.setConversationId(conversationId);
         Appointment savedAppointment = appointmentRepository.save(appointment);
@@ -80,7 +80,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Schedule reminder jobs for the new appointment
         LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
         jobSchedulerService.scheduleAppointmentReminderJobs(savedAppointment.getAppointmentId().toString(), appointmentDateTime);
-        
+        User userDetails = userService.getUserById(appointment.getUserId());
+
+        // Todo: Test fornow
+        emailService.sendAppointmentReminderEmail(userDetails, appointment, 0);
+        pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, 0);
+
+
         User user = userRepo.findById(UUID.fromString(appointment.getDoctorId()))
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return modelMapper.map(user, UserDoctorDTO.class);
