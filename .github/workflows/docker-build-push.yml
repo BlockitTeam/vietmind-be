@@ -21,7 +21,7 @@ on:
 env:
   REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
-  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USER }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
 
 jobs:
