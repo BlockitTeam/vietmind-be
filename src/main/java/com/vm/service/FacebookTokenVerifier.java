@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -19,9 +20,10 @@ public class FacebookTokenVerifier {
     private final OkHttpClient client;
     private final ObjectMapper objectMapper;
 
-    public FacebookTokenVerifier() {
+    @Autowired
+    public FacebookTokenVerifier(ObjectMapper objectMapper) {
         this.client = new OkHttpClient();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     public JsonNode verifyToken(String accessToken, String userId) throws IOException {

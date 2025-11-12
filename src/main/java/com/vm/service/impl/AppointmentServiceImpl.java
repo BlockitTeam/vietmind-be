@@ -8,9 +8,9 @@ import com.vm.model.Conversation;
 import com.vm.model.User;
 import com.vm.repo.AppointmentRepository;
 import com.vm.repo.UserRepository;
-import com.vm.service.AppointmentService;
-import com.vm.service.ConversationService;
+import com.vm.service.*;
 import com.vm.util.KeyManagement;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,19 +25,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
     @Autowired
     private AppointmentRepository appointmentRepository;
 
-    @Autowired
     private ConversationService conversationService;
 
-    @Autowired
     private UserRepository userRepo;
 
-    @Autowired
     private ModelMapper modelMapper;
+
+    private JobSchedulerService jobSchedulerService;
+
+    private PushNotificationService pushNotificationService;
+
+    private UserService userService;
+
+    private final EmailService emailService;
 
     @Override
     public UserDoctorDTO createAppointment(Appointment appointment) throws Exception {
@@ -64,12 +70,23 @@ public class AppointmentServiceImpl implements AppointmentService {
         } else {
             conversationId = conversation.getConversationId();
             //conversation already have Appointment
-            Appointment originAppointment = appointmentRepository.findByConversationId(conversationId);
-            if (originAppointment != null)
-                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
+//            Appointment originAppointment = appointmentRepository.findByConversationId(conversationId);
+//            if (originAppointment != null)
+//                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
         }
         appointment.setConversationId(conversationId);
-        appointmentRepository.save(appointment);
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+        
+        // Schedule reminder jobs for the new appointment
+        LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
+        jobSchedulerService.scheduleAppointmentReminderJobs(savedAppointment.getAppointmentId().toString(), appointmentDateTime);
+        User userDetails = userService.getUserById(appointment.getUserId());
+
+        // Todo: Test fornow
+        emailService.sendAppointmentReminderEmail(userDetails, appointment, 0);
+        pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, 0);
+
+
         User user = userRepo.findById(UUID.fromString(appointment.getDoctorId()))
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return modelMapper.map(user, UserDoctorDTO.class);
@@ -229,6 +246,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     public Appointment doctorCreateAppointment(Appointment appointment) {
         //Create new Appointment
+        User userDetails = userService.getUserById(appointment.getUserId());
         if (appointment.getAppointmentId() == null) {
             String userId = appointment.getUserId();
             // Lấy cuộc hẹn hiện tại hoặc đang diễn ra
@@ -289,16 +307,33 @@ public class AppointmentServiceImpl implements AppointmentService {
             if (!beAbleHaveFutureAppointment) {
                 throw new IllegalStateException("Cannot create a future appointment for this user.");
             }
-            return appointmentRepository.save(appointment);
+            Appointment savedAppointment = appointmentRepository.save(appointment);
+            
+            // Schedule reminder jobs for the new appointment
+            LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
+            jobSchedulerService.scheduleAppointmentReminderJobs(savedAppointment.getAppointmentId().toString(), appointmentDateTime);
+            pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, 0);
+            
+            return savedAppointment;
         } else {
             if (AppointmentStatus.CANCELLED.equals(appointment.getStatus())) {
+                // Cancel reminder jobs when appointment is cancelled
+                jobSchedulerService.cancelJobsByEntity("appointment", appointment.getAppointmentId().toString());
                 appointmentRepository.deleteByAppointmentId(appointment.getAppointmentId());
                 return appointment;
             }
         }
 
         //Update status
-        return appointmentRepository.save(appointment);
+        Appointment updatedAppointment = appointmentRepository.save(appointment);
+        
+        // If appointment time is updated, reschedule reminder jobs
+        if (appointment.getAppointmentDate() != null && appointment.getStartTime() != null) {
+            LocalDateTime newAppointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
+            jobSchedulerService.updateJobsByEntity("appointment", appointment.getAppointmentId().toString(), newAppointmentDateTime);
+        }
+        
+        return updatedAppointment;
     }
 
     @Override
@@ -309,10 +344,21 @@ public class AppointmentServiceImpl implements AppointmentService {
         existAppointment.setStatus(appointment.getStatus());
 
         if (AppointmentStatus.CANCELLED.equals(appointment.getStatus())) {
+            // Cancel reminder jobs when appointment is cancelled
+            jobSchedulerService.cancelJobsByEntity("appointment", appointment.getAppointmentId().toString());
             appointmentRepository.deleteByAppointmentId(appointment.getAppointmentId());
             return appointment;
         }
-        return appointmentRepository.save(existAppointment);
+        
+        Appointment updatedAppointment = appointmentRepository.save(existAppointment);
+        
+        // If appointment time is updated, reschedule reminder jobs
+        if (appointment.getAppointmentDate() != null && appointment.getStartTime() != null) {
+            LocalDateTime newAppointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
+            jobSchedulerService.updateJobsByEntity("appointment", appointment.getAppointmentId().toString(), newAppointmentDateTime);
+        }
+        
+        return updatedAppointment;
     }
 
     private String formatDateTime(LocalDate date, LocalTime time, DateTimeFormatter formatter) {

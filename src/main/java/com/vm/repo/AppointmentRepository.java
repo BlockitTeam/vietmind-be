@@ -17,7 +17,7 @@ import java.util.Optional;
 //
 
 @Repository
-public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
     Appointment findByConversationId(Integer conversationId);
 
     Optional<Appointment> findByAppointmentId(Integer appointmentId);

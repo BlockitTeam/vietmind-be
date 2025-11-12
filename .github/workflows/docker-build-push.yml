@@ -1,0 +1,225 @@
+name: Build, Push and Deploy
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment Environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: "Docker Image Tag (leave empty to use latest)"
+        required: false
+        type: string
+
+env:
+  REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+  IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+
+jobs:
+  determine-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      image_tag: ${{ steps.set-env.outputs.image_tag }}
+    steps:
+      - name: Determine environment and tag
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+            IMAGE_TAG="${{ github.event.inputs.image_tag || 'latest' }}"
+          else
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            IMAGE_TAG="${TAG_NAME}"
+            if [[ "$TAG_NAME" == *"prod"* ]] || [[ "$TAG_NAME" == *"production"* ]]; then
+              ENVIRONMENT="production"
+            else
+              ENVIRONMENT="staging"
+            fi
+          fi
+
+          echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
+          echo "image_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "Determined environment: ${ENVIRONMENT}"
+          echo "Image tag: ${IMAGE_TAG}"
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: determine-environment
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_URL }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ needs.determine-environment.outputs.image_tag }}
+            type=raw,value=${{ needs.determine-environment.outputs.environment }}-latest
+            type=sha,prefix=${{ needs.determine-environment.outputs.environment }}-
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Image info
+        run: |
+          echo "✅ Image pushed successfully"
+          echo "Tag: ${{ needs.determine-environment.outputs.image_tag }}"
+          echo "Digest: ${{ steps.build.outputs.digest }}"
+
+  create-deployment:
+    runs-on: ubuntu-latest
+    needs: [determine-environment, build-and-push]
+    outputs:
+      deployment_id: ${{ steps.create.outputs.deployment_id }}
+    environment:
+      name: ${{ needs.determine-environment.outputs.environment }}
+    steps:
+      - name: Create GitHub Deployment
+        id: create
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.ref,
+              environment: '${{ needs.determine-environment.outputs.environment }}',
+              description: `Deploy ${{ needs.determine-environment.outputs.image_tag }} to ${{ needs.determine-environment.outputs.environment }}`,
+              auto_merge: false,
+              required_contexts: []
+            });
+            core.setOutput('deployment_id', deployment.data.id);
+            console.log(`Created deployment ${deployment.data.id}`);
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [determine-environment, build-and-push, create-deployment]
+    environment:
+      name: ${{ needs.determine-environment.outputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Prepare environment variables
+        id: prepare
+        run: |
+          echo "ENVIRONMENT=${{ needs.determine-environment.outputs.environment }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ needs.determine-environment.outputs.image_tag }}" >> $GITHUB_ENV
+          echo "SSH_HOST=${{  secrets.SSH_HOST }}" >> $GITHUB_ENV
+          echo "SSH_USER=${{  secrets.SSH_USER }}" >> $GITHUB_ENV
+          echo "SSH_PORT=${{  secrets.SSH_PORT || '22' }}" >> $GITHUB_ENV
+
+      - name: Get previous version
+        id: previous
+        run: |
+          PREV_VERSION=$(ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST \
+            "docker ps --filter 'name=vietmind-backend' --format '{{.Image}}' | grep -oP '(?<=:)[^ ]+' || echo 'none'")
+          echo "previous_version=$PREV_VERSION" >> $GITHUB_OUTPUT
+          echo "Previous version: $PREV_VERSION"
+
+      - name: Deploy container
+        id: deploy
+        run: |
+          echo "🚀 Deploying to $ENVIRONMENT"
+          ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY_URL }} -u ${{ github.actor }} --password-stdin
+            docker pull $IMAGE
+            docker stop vietmind-backend || true
+            docker rm vietmind-backend || true
+            docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network $IMAGE
+          EOF
+          echo "deployment_status=deployed" >> $GITHUB_OUTPUT
+
+      - name: Health check and rollback
+        id: health
+        run: |
+          HEALTH=$(ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST \
+            "timeout 2 curl -f -s http://localhost:9001/actuator/health >/dev/null 2>&1 && echo healthy || echo unhealthy")
+          echo "Health: $HEALTH"
+          if [ "$HEALTH" != "healthy" ]; then
+            echo "❌ Health check failed, rolling back..."
+            if [ "${{ steps.previous.outputs.previous_version }}" != "none" ]; then
+              PREV_IMAGE="${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ steps.previous.outputs.previous_version }}"
+              ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
+                docker stop vietmind-backend || true
+                docker rm vietmind-backend || true
+                docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network $PREV_IMAGE
+              EOF
+              echo "rollback_status=rolled_back" >> $GITHUB_OUTPUT
+              echo "deployment_status=failed_rolled_back" >> $GITHUB_OUTPUT
+              exit 1
+            else
+              echo "rollback_status=no_previous_version" >> $GITHUB_OUTPUT
+              echo "deployment_status=failed_no_rollback" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+          else
+            echo "✅ Healthy deployment"
+            echo "rollback_status=not_needed" >> $GITHUB_OUTPUT
+            echo "deployment_status=success" >> $GITHUB_OUTPUT
+
+      - name: Update deployment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ steps.health.outputs.deployment_status }}' === 'success' ? 'success' : 'failure';
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ needs.create-deployment.outputs.deployment_id }},
+              state: status,
+              description: `Deployment ${status}`
+            });
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "📊 DEPLOYMENT SUMMARY"
+          echo "Environment: $ENVIRONMENT"
+          echo "Image: $IMAGE"
+          echo "Previous: ${{ steps.previous.outputs.previous_version }}"
+          echo "Status: ${{ steps.health.outputs.deployment_status }}"
+          echo "Rollback: ${{ steps.health.outputs.rollback_status }}"
+          echo "=========================================="
