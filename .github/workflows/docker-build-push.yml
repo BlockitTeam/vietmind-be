@@ -203,12 +203,33 @@ jobs:
       - name: Prepare environment variables
         id: prepare
         run: |
-          echo "ENVIRONMENT=${{ needs.determine-environment.outputs.environment }}" >> $GITHUB_ENV
-          echo "IMAGE=${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ needs.determine-environment.outputs.image_tag }}" >> $GITHUB_ENV
+          ENV="${{ needs.determine-environment.outputs.environment }}"
+          TAG="${{ needs.determine-environment.outputs.image_tag }}"
+          
+          # Ensure tag is not empty and sanitize
+          if [ -z "${TAG}" ] || [ "${TAG}" == "null" ]; then
+            TAG="latest"
+          fi
+          
+          # Sanitize tag - remove invalid characters, convert to lowercase
+          TAG=$(echo "${TAG}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]//g')
+          ENV_LOWER=$(echo "${ENV}" | tr '[:upper:]' '[:lower:]')
+          
+          # Ensure tag doesn't start or end with invalid characters
+          TAG=$(echo "${TAG}" | sed 's/^[.-]//;s/[.-]$//')
+          
+          # Validate tag is not empty after sanitization, use environment-based tag as fallback
+          if [ -z "${TAG}" ]; then
+            TAG="${ENV_LOWER}-latest"
+          fi
+          
+          echo "ENVIRONMENT=${ENV}" >> $GITHUB_ENV
+          echo "IMAGE=${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${TAG}" >> $GITHUB_ENV
           echo "SSH_HOST=${{  secrets.SSH_HOST }}" >> $GITHUB_ENV
           echo "SSH_USER=${{  secrets.SSH_USER }}" >> $GITHUB_ENV
           echo "SSH_PORT=${{  secrets.SSH_PORT || '22' }}" >> $GITHUB_ENV
           echo "ENV_FILE_PATH=${{ secrets.ENV_FILE_PATH || '~/deploy/.env' }}" >> $GITHUB_ENV
+          echo "Using image tag: ${TAG}"
 
       - name: Get previous version
         id: previous
