@@ -238,7 +238,7 @@ jobs:
             docker pull $IMAGE
             docker stop vietmind-backend || true
             docker rm vietmind-backend || true
-            docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network --env-file $ENV_FILE_PATH $IMAGE
+            docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network --env-file $ENV_FILE_PATH -e SPRING_PROFILES_ACTIVE=prod $IMAGE
           EOF
           echo "deployment_status=deployed" >> $GITHUB_OUTPUT
 
@@ -255,7 +255,7 @@ jobs:
               ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
                 docker stop vietmind-backend || true
                 docker rm vietmind-backend || true
-                docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network --env-file $ENV_FILE_PATH $PREV_IMAGE
+                docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network --env-file $ENV_FILE_PATH -e SPRING_PROFILES_ACTIVE=prod $PREV_IMAGE
               EOF
               echo "rollback_status=rolled_back" >> $GITHUB_OUTPUT
               echo "deployment_status=failed_rolled_back" >> $GITHUB_OUTPUT
