@@ -63,14 +63,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create Firebase credentials file from secret
+        env:
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
         run: |
-          if [ -n "${{ secrets.FIREBASE_CREDENTIALS }}" ]; then
-            echo "${{ secrets.FIREBASE_CREDENTIALS }}" > src/main/resources/firebase-credentials.json
+          mkdir -p src/main/resources
+          
+          # Check if secret is set and not empty
+          if [ -n "$FIREBASE_CREDENTIALS" ] && [ "$FIREBASE_CREDENTIALS" != "" ]; then
+            echo "$FIREBASE_CREDENTIALS" > src/main/resources/firebase-credentials.json
             echo "✅ Firebase credentials file created from secret"
+            # Verify file was created and has content
+            if [ -f src/main/resources/firebase-credentials.json ] && [ -s src/main/resources/firebase-credentials.json ]; then
+              FILE_SIZE=$(wc -c < src/main/resources/firebase-credentials.json)
+              echo "✅ Verified: firebase-credentials.json created (${FILE_SIZE} bytes)"
+            else
+              echo "❌ Error: firebase-credentials.json file is empty or not created"
+              exit 1
+            fi
           else
-            echo "⚠️ Warning: FIREBASE_CREDENTIALS secret not set, creating empty file"
-            mkdir -p src/main/resources
-            echo '{}' > src/main/resources/firebase-credentials.json
+            echo "⚠️ Warning: FIREBASE_CREDENTIALS secret not set or empty"
+            echo "Creating placeholder file. Application will start but Firebase features will be disabled."
+            echo '{"note": "Firebase credentials not configured"}' > src/main/resources/firebase-credentials.json
           fi
 
       - name: Set up Docker Buildx
@@ -267,41 +280,13 @@ jobs:
       - name: Health check and rollback
         id: health
         run: |
-          echo "⏳ Waiting 10 seconds for container to start..."
-          sleep 10
-          
-          echo "🔍 Performing health check..."
-          MAX_RETRIES=6
-          RETRY_DELAY=5
-          HEALTH="unhealthy"
-          
-          for i in $(seq 1 $MAX_RETRIES); do
-            echo "Health check attempt $i/$MAX_RETRIES..."
-            HEALTH=$(ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST \
-              "timeout 5 curl -f -s http://localhost:9001/actuator/health >/dev/null 2>&1 && echo healthy || echo unhealthy")
-            echo "Health: $HEALTH"
-            
-            if [ "$HEALTH" == "healthy" ]; then
-              break
-            fi
-            
-            if [ $i -lt $MAX_RETRIES ]; then
-              echo "⏳ Waiting ${RETRY_DELAY} seconds before retry..."
-              sleep $RETRY_DELAY
-            fi
-          done
-          
+          HEALTH=$(ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST \
+            "timeout 2 curl -f -s http://localhost:9001/actuator/health >/dev/null 2>&1 && echo healthy || echo unhealthy")
+          echo "Health: $HEALTH"
           if [ "$HEALTH" != "healthy" ]; then
-            echo "❌ Health check failed after $MAX_RETRIES attempts, rolling back..."
-            PREV_VERSION="${{ steps.previous.outputs.previous_version }}"
-            if [ -n "$PREV_VERSION" ] && [ "$PREV_VERSION" != "none" ]; then
-              # Sanitize and validate previous version tag
-              PREV_TAG=$(echo "${PREV_VERSION}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]//g' | sed 's/^[.-]//;s/[.-]$//')
-              if [ -z "$PREV_TAG" ]; then
-                PREV_TAG="latest"
-              fi
-              PREV_IMAGE="${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${PREV_TAG}"
-              echo "Rolling back to: $PREV_IMAGE"
+            echo "❌ Health check failed, rolling back..."
+            if [ "${{ steps.previous.outputs.previous_version }}" != "none" ]; then
+              PREV_IMAGE="${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ steps.previous.outputs.previous_version }}"
               ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
                 docker stop vietmind-backend || true
                 docker rm vietmind-backend || true
@@ -311,7 +296,6 @@ jobs:
               echo "deployment_status=failed_rolled_back" >> $GITHUB_OUTPUT
               exit 1
             else
-              echo "⚠️ No previous version available for rollback"
               echo "rollback_status=no_previous_version" >> $GITHUB_OUTPUT
               echo "deployment_status=failed_no_rollback" >> $GITHUB_OUTPUT
               exit 1
@@ -320,7 +304,6 @@ jobs:
             echo "✅ Healthy deployment"
             echo "rollback_status=not_needed" >> $GITHUB_OUTPUT
             echo "deployment_status=success" >> $GITHUB_OUTPUT
-          fi
 
       - name: Update deployment status
         if: always()
