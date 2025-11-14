@@ -267,13 +267,41 @@ jobs:
       - name: Health check and rollback
         id: health
         run: |
-          HEALTH=$(ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST \
-            "timeout 2 curl -f -s http://localhost:9001/actuator/health >/dev/null 2>&1 && echo healthy || echo unhealthy")
-          echo "Health: $HEALTH"
+          echo "⏳ Waiting 10 seconds for container to start..."
+          sleep 10
+          
+          echo "🔍 Performing health check..."
+          MAX_RETRIES=6
+          RETRY_DELAY=5
+          HEALTH="unhealthy"
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Health check attempt $i/$MAX_RETRIES..."
+            HEALTH=$(ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST \
+              "timeout 5 curl -f -s http://localhost:9001/actuator/health >/dev/null 2>&1 && echo healthy || echo unhealthy")
+            echo "Health: $HEALTH"
+            
+            if [ "$HEALTH" == "healthy" ]; then
+              break
+            fi
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "⏳ Waiting ${RETRY_DELAY} seconds before retry..."
+              sleep $RETRY_DELAY
+            fi
+          done
+          
           if [ "$HEALTH" != "healthy" ]; then
-            echo "❌ Health check failed, rolling back..."
-            if [ "${{ steps.previous.outputs.previous_version }}" != "none" ]; then
-              PREV_IMAGE="${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ steps.previous.outputs.previous_version }}"
+            echo "❌ Health check failed after $MAX_RETRIES attempts, rolling back..."
+            PREV_VERSION="${{ steps.previous.outputs.previous_version }}"
+            if [ -n "$PREV_VERSION" ] && [ "$PREV_VERSION" != "none" ]; then
+              # Sanitize and validate previous version tag
+              PREV_TAG=$(echo "${PREV_VERSION}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]//g' | sed 's/^[.-]//;s/[.-]$//')
+              if [ -z "$PREV_TAG" ]; then
+                PREV_TAG="latest"
+              fi
+              PREV_IMAGE="${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${PREV_TAG}"
+              echo "Rolling back to: $PREV_IMAGE"
               ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
                 docker stop vietmind-backend || true
                 docker rm vietmind-backend || true
@@ -283,6 +311,7 @@ jobs:
               echo "deployment_status=failed_rolled_back" >> $GITHUB_OUTPUT
               exit 1
             else
+              echo "⚠️ No previous version available for rollback"
               echo "rollback_status=no_previous_version" >> $GITHUB_OUTPUT
               echo "deployment_status=failed_no_rollback" >> $GITHUB_OUTPUT
               exit 1
@@ -291,6 +320,7 @@ jobs:
             echo "✅ Healthy deployment"
             echo "rollback_status=not_needed" >> $GITHUB_OUTPUT
             echo "deployment_status=success" >> $GITHUB_OUTPUT
+          fi
 
       - name: Update deployment status
         if: always()
