@@ -233,6 +233,7 @@ jobs:
         id: deploy
         run: |
           echo "🚀 Deploying to $ENVIRONMENT"
+          echo "🚀 Deploying to $IMAGE"
           ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
             echo "${{ env.REGISTRY_PASSWORD }}" | docker login ${{ env.REGISTRY_URL }} -u ${{ env.REGISTRY_USERNAME }} --password-stdin
             docker pull $IMAGE
