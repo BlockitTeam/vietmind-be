@@ -14,25 +14,29 @@
             padding: 20px;
             background-color: #f4f4f4;
         }
+
         .container {
             background-color: #ffffff;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #FF5722;
+            border-bottom: 2px solid #4CAF50;
         }
+
         .header h1 {
-            color: #FF5722;
+            color: #4CAF50;
             margin: 0;
             font-size: 28px;
         }
+
         .reminder-badge {
-            background-color: #FF5722;
+            background-color: #FF9800;
             color: white;
             padding: 8px 16px;
             border-radius: 20px;
@@ -41,13 +45,15 @@
             display: inline-block;
             margin-bottom: 20px;
         }
+
         .appointment-details {
             background-color: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
-            border-left: 4px solid #FF5722;
+            border-left: 4px solid #4CAF50;
         }
+
         .detail-row {
             display: flex;
             justify-content: space-between;
@@ -55,22 +61,27 @@
             padding: 8px 0;
             border-bottom: 1px solid #e9ecef;
         }
+
         .detail-row:last-child {
             border-bottom: none;
         }
+
         .detail-label {
             font-weight: bold;
             color: #495057;
         }
+
         .detail-value {
             color: #212529;
         }
+
         .content-section {
-            background-color: #fff3e0;
+            background-color: #e3f2fd;
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
         }
+
         .footer {
             text-align: center;
             margin-top: 30px;
@@ -79,9 +90,10 @@
             color: #6c757d;
             font-size: 14px;
         }
+
         .button {
             display: inline-block;
-            background-color: #FF5722;
+            background-color: #4CAF50;
             color: white;
             padding: 12px 24px;
             text-decoration: none;
@@ -89,10 +101,11 @@
             margin: 20px 0;
             font-weight: bold;
         }
-        .urgent {
-            background-color: #ffebee;
-            border: 1px solid #ffcdd2;
-            color: #c62828;
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
@@ -100,57 +113,61 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🏥 VietMind</h1>
-            <div class="reminder-badge">🚨 Nhắc nhở 1 giờ trước</div>
+<div class="container">
+    <div class="header">
+        <h1>🏥 VietMind</h1>
+        <div class="reminder-badge">⏰ Nhắc nhở 1h giờ trước</div>
+    </div>
+
+    <h2>Xin chào {{userName}},</h2>
+
+    <p> Bạn có một cuộc hiện với nhà tham vấn của chúng tôi trong vòng 1h giờ tới. Vui lòng chuẩn bị sẵn sàng cho buổi
+        hẹn để quá trình trao đổi được hiệu quả nhất.</p>
+
+    <div class="appointment-details">
+        <h3 style="margin-top: 0;">📅 Thông tin cuộc hẹn</h3>
+        <div class="detail-row">
+            <span class="detail-label">📅 Ngày:</span>
+            <span class="detail-value">{{appointmentDate}}</span>
         </div>
-        
-        <h2>Xin chào {{userName}},</h2>
-        
-        <p><strong>Cuộc hẹn của bạn sẽ bắt đầu trong 1 giờ!</strong> Vui lòng chuẩn bị sẵn sàng.</p>
-        
-        <div class="appointment-details">
-            <h3 style="margin-top: 0; color: #FF5722;">📅 Thông tin cuộc hẹn</h3>
-            <div class="detail-row">
-                <span class="detail-label">📅 Ngày:</span>
-                <span class="detail-value">{{appointmentDate}}</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">🕐 Thời gian bắt đầu:</span>
-                <span class="detail-value">{{startTime}}</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">🕐 Thời gian kết thúc:</span>
-                <span class="detail-value">{{endTime}}</span>
-            </div>
+        <div class="detail-row">
+            <span class="detail-label">👨🏻‍⚕️ Bác sĩ:</span>
+            <span class="detail-value">{{doctorName}}</span>
         </div>
-        
-        <div class="content-section">
-            <h3 style="margin-top: 0; color: #E65100;">📝 Nội dung cuộc hẹn</h3>
-            <p>{{appointmentContent}}</p>
+        <div class="detail-row">
+            <span class="detail-label">🕐 Thời gian bắt đầu:</span>
+            <span class="detail-value">{{startTime}}</span>
         </div>
-        
-        <div class="urgent">
-            <strong>🚨 Lưu ý khẩn cấp:</strong>
-            <ul>
-                <li><strong>Cuộc hẹn sẽ bắt đầu trong 1 giờ!</strong></li>
-                <li>Vui lòng có mặt trước 5-10 phút</li>
-                <li>Kiểm tra kết nối internet và thiết bị</li>
-                <li>Chuẩn bị giấy tờ cần thiết</li>
-                <li>Nếu có vấn đề, liên hệ ngay lập tức</li>
-            </ul>
-        </div>
-        
-        <div style="text-align: center;">
-            <a href="#" class="button">📱 Tham gia cuộc hẹn</a>
-        </div>
-        
-        <div class="footer">
-            <p>Trân trọng,<br><strong>Đội ngũ VietMind</strong></p>
-            <p>📧 Email: support@vietmind.com<br>📞 Hotline: 1900-xxxx</p>
-            <p><small>Email này được gửi tự động, vui lòng không trả lời.</small></p>
+        <div class="detail-row">
+            <span class="detail-label">🕐 Thời gian kết thúc:</span>
+            <span class="detail-value">{{endTime}}</span>
         </div>
     </div>
+
+    <!--        <div class="content-section">-->
+    <!--            <h3 style="margin-top: 0; color: #1976d2;">📝 Nội dung cuộc hẹn</h3>-->
+    <!--            <p>{{appointmentContent}}</p>-->
+    <!--        </div>-->
+
+    <!--        <div class="warning">-->
+    <!--            <strong>⚠️ Lưu ý quan trọng:</strong>-->
+    <!--            <ul>-->
+    <!--                <li>Vui lòng có mặt trước 10-15 phút để chuẩn bị</li>-->
+    <!--                <li>Mang theo giấy tờ tùy thân và thông tin y tế cần thiết</li>-->
+    <!--                <li>Nếu có thay đổi, vui lòng liên hệ trước ít nhất 2 giờ</li>-->
+    <!--            </ul>-->
+    <!--        </div>-->
+
+    <div style="text-align: center;">
+        <a href="#" class="button">📱 Xem chi tiết cuộc hẹn</a>
+    </div>
+    <p>Nếu bạn cần thay đổi thời gian hoặc có thoắc mắc, vui lòng liên hệ theo email bên dưới.</p>
+
+    <div class="footer">
+        <p>Trân trọng,<br><strong>Đội ngũ VietMind</strong></p>
+        <p>📧 Email: support@vietmind.com<br>📞 Hotline: 1900-xxxx</p>
+        <p><small>Email này được gửi tự động, vui lòng không trả lời.</small></p>
+    </div>
+</div>
 </body>
 </html>
