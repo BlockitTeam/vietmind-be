@@ -208,6 +208,7 @@ jobs:
           echo "SSH_HOST=${{  secrets.SSH_HOST }}" >> $GITHUB_ENV
           echo "SSH_USER=${{  secrets.SSH_USER }}" >> $GITHUB_ENV
           echo "SSH_PORT=${{  secrets.SSH_PORT || '22' }}" >> $GITHUB_ENV
+          echo "ENV_FILE_PATH=${{ secrets.ENV_FILE_PATH || '~/deploy/.env' }}" >> $GITHUB_ENV
 
       - name: Get previous version
         id: previous
@@ -217,16 +218,27 @@ jobs:
           echo "previous_version=$PREV_VERSION" >> $GITHUB_OUTPUT
           echo "Previous version: $PREV_VERSION"
 
+      - name: Verify .env file exists on server
+        run: |
+          echo "🔍 Checking for .env file on server at path: $ENV_FILE_PATH"
+          if ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST "[ -f $ENV_FILE_PATH ]"; then
+            echo "✅ .env file found at: $ENV_FILE_PATH"
+          else
+            echo "⚠️ Warning: .env file not found at $ENV_FILE_PATH on server"
+            echo "Container will run without environment variables from .env file"
+            echo "Please ensure .env file exists or set ENV_FILE_PATH secret to the correct path"
+          fi
+
       - name: Deploy container
         id: deploy
         run: |
           echo "🚀 Deploying to $ENVIRONMENT"
           ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY_URL }} -u ${{ github.actor }} --password-stdin
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY_URL }} -u ${{ env.REGISTRY_USERNAME }} --password-stdin
             docker pull $IMAGE
             docker stop vietmind-backend || true
             docker rm vietmind-backend || true
-            docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network $IMAGE
+            docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network --env-file $ENV_FILE_PATH $IMAGE
           EOF
           echo "deployment_status=deployed" >> $GITHUB_OUTPUT
 
@@ -243,7 +255,7 @@ jobs:
               ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
                 docker stop vietmind-backend || true
                 docker rm vietmind-backend || true
-                docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network $PREV_IMAGE
+                docker run -d --name vietmind-backend --restart unless-stopped -p 9001:9001 --network vietmind-network --env-file $ENV_FILE_PATH $PREV_IMAGE
               EOF
               echo "rollback_status=rolled_back" >> $GITHUB_OUTPUT
               echo "deployment_status=failed_rolled_back" >> $GITHUB_OUTPUT

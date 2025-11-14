@@ -1,8 +1,46 @@
-#spring:
-#  datasource:
-#    password: Aa123456
-#    url: jdbc:mysql://localhost:3306/vm_authen
-#    username: root
-#  jpa:
-#    hibernate:
-#      ddl-auto: update
+server:
+  port: ${SERVER_PORT}
+
+spring:
+  datasource:
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO}
+  flyway:
+    enabled: ${FLYWAY_ENABLED}
+    locations: ${FLYWAY_LOCATIONS}
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
+            scope: ${GOOGLE_SCOPE}
+  jackson:
+    serialization:
+      write-date-keys-as-timestamps: ${JACKSON_WRITE_DATE_KEYS_AS_TIMESTAMPS}
+
+custom:
+  client-id-google-ios: ${CUSTOM_CLIENT_ID_GOOGLE_IOS}
+  client-id-google-android: ${CUSTOM_CLIENT_ID_GOOGLE_ANDROID}
+  client-id-google-web: ${CUSTOM_CLIENT_ID_GOOGLE_WEB}
+
+# AWS SES Email Configuration
+aws:
+  ses:
+    region: ${AWS_REGION}
+    accessKeyId: ${AWS_ACCESS_KEY_ID}
+    secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+    from:
+      email: ${SES_FROM_EMAIL}
+      name: ${SES_FROM_NAME}
+
+# Firebase Configuration
+firebase:
+  credentials:
+    path: ${FIREBASE_CREDENTIALS_PATH}
