@@ -234,7 +234,7 @@ jobs:
         run: |
           echo "🚀 Deploying to $ENVIRONMENT"
           ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST << EOF
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY_URL }} -u ${{ env.REGISTRY_USERNAME }} --password-stdin
+            echo "${{ env.REGISTRY_PASSWORD }}" | docker login ${{ env.REGISTRY_URL }} -u ${{ env.REGISTRY_USERNAME }} --password-stdin
             docker pull $IMAGE
             docker stop vietmind-backend || true
             docker rm vietmind-backend || true
