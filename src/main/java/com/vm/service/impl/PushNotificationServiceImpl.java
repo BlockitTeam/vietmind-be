@@ -33,6 +33,7 @@ public class PushNotificationServiceImpl implements PushNotificationService {
         data.put("type", "appointment_reminder");
         data.put("appointmentId", appointment.getAppointmentId().toString());
         data.put("appointmentDate", appointment.getAppointmentDate().toString());
+        data.put("doctorId", appointment.getDoctorId());
         data.put("startTime", appointment.getStartTime().toString());
         data.put("hoursBefore", String.valueOf(hoursBefore));
         

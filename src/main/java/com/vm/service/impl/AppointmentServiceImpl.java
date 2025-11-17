@@ -83,7 +83,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         User userDetails = userService.getUserById(appointment.getUserId());
 
         // Todo: Test fornow
-        emailService.sendAppointmentReminderEmail(userDetails, appointment, 0);
+//        emailService.sendAppointmentReminderEmail(userDetails, appointment, 0);
         pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, 0);
 
 
