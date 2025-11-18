@@ -283,7 +283,7 @@ jobs:
         id: health
         run: |
           HEALTH=$(ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USER@$SSH_HOST \
-            "timeout 2 curl -f -s http://localhost:9001/actuator/health >/dev/null 2>&1 && echo healthy || echo unhealthy")
+            "timeout 2 curl -f -s http://localhost:9001/actuator/health/ping >/dev/null 2>&1 && echo healthy || echo unhealthy")
           echo "Health: $HEALTH"
           if [ "$HEALTH" != "healthy" ]; then
             echo "❌ Health check failed, rolling back..."

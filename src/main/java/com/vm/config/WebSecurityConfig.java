@@ -93,6 +93,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/v1/auth", "/api/v1/auth/login", "/api/v1/auth/logout").permitAll() // Allow access to /api/auth/token without authentication
                 .antMatchers("/swagger-ui/**", "/swagger-ui.html", "/v2/api-docs", "/swagger-resources/**", "/webjars/**").permitAll() // Allow Swagger UI access
+                .antMatchers("/actuator/health/ping").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .logout()
