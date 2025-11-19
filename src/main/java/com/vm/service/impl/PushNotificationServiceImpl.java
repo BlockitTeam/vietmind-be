@@ -1,5 +1,6 @@
 package com.vm.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -7,6 +8,8 @@ import com.google.firebase.messaging.Notification;
 import com.vm.model.Appointment;
 import com.vm.model.User;
 import com.vm.service.PushNotificationService;
+import com.vm.service.UserService;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,11 +18,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+@AllArgsConstructor
 @Service
 public class PushNotificationServiceImpl implements PushNotificationService {
     
     private static final Logger logger = LoggerFactory.getLogger(PushNotificationServiceImpl.class);
-    
+    private final UserService userService;
+    private final ObjectMapper objectMapper;
+
     @Override
     public void sendAppointmentReminderNotification(User user, Appointment appointment, int hoursBefore) {
         String title = hoursBefore <= 0 ? "Bạn vừa có 1 cuộc hẹn mới!" : String.format("Cuộc hẹn sẽ diễn ra trong %d giờ tới", hoursBefore);
@@ -27,6 +33,31 @@ public class PushNotificationServiceImpl implements PushNotificationService {
             appointment.getAppointmentDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
             appointment.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"))
         );
+
+        var doctorDetail = userService.getDoctorById(appointment.getDoctorId()).get();
+        
+        // Create doctor detail map
+        Map<String, Object> doctorInfo = new HashMap<>();
+        doctorInfo.put("doctorId", doctorDetail.getId().toString());
+        doctorInfo.put("doctorName", doctorDetail.getFullName());
+        if (doctorDetail.getWorkplace() != null) {
+            doctorInfo.put("workplace", doctorDetail.getWorkplace());
+        }
+        if (doctorDetail.getDegree() != null) {
+            doctorInfo.put("degree", doctorDetail.getDegree());
+        }
+        if (doctorDetail.getSpecializations() != null) {
+            doctorInfo.put("specializations", doctorDetail.getSpecializations());
+        }
+        
+        // Convert doctor info to JSON string
+        String doctorDetailJson;
+        try {
+            doctorDetailJson = objectMapper.writeValueAsString(doctorInfo);
+        } catch (Exception e) {
+            logger.error("Failed to serialize doctor detail to JSON", e);
+            doctorDetailJson = "{}";
+        }
         
         // Create notification data
         Map<String, String> data = new HashMap<>();
@@ -36,6 +67,7 @@ public class PushNotificationServiceImpl implements PushNotificationService {
         data.put("doctorId", appointment.getDoctorId());
         data.put("startTime", appointment.getStartTime().toString());
         data.put("hoursBefore", String.valueOf(hoursBefore));
+        data.put("doctorDetail", doctorDetailJson);
         
         // Get device token from user
         String deviceToken = user.getDeviceToken();

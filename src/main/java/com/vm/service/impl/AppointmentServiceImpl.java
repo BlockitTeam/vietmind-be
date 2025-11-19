@@ -70,9 +70,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         } else {
             conversationId = conversation.getConversationId();
             //conversation already have Appointment
-//            Appointment originAppointment = appointmentRepository.findByConversationId(conversationId);
-//            if (originAppointment != null)
-//                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
+            Appointment originAppointment = appointmentRepository.findByConversationId(conversationId);
+            if (originAppointment != null)
+                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
         }
         appointment.setConversationId(conversationId);
         Appointment savedAppointment = appointmentRepository.save(appointment);
