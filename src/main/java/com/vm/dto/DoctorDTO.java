@@ -19,7 +19,7 @@ public class DoctorDTO {
     private String workplace;
 
     @JsonProperty("specialty")
-    private Integer specializations;
+    private String specializations;
 
 
 
