@@ -1,5 +1,6 @@
 package com.vm.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vm.enums.Gender;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,4 +16,11 @@ public class DoctorDTO {
     private Integer birthYear;
     private Gender gender;
     private Integer conversationId;
+    private String workplace;
+
+    @JsonProperty("specialty")
+    private Integer specializations;
+
+
+
 }
