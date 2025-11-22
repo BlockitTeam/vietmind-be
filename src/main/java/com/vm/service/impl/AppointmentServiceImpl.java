@@ -74,6 +74,13 @@ public class AppointmentServiceImpl implements AppointmentService {
             if (originAppointment != null)
                 throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
         }
+        
+        // Validate: User chỉ được có 1 appointment trong tương lai
+        Optional<Appointment> existingFutureAppointment = getFutureAppointmentByUserId(appointment.getUserId());
+        if (existingFutureAppointment.isPresent()) {
+            throw new IllegalStateException("User already has a future appointment. Cannot create a new one.");
+        }
+        
         appointment.setConversationId(conversationId);
         Appointment savedAppointment = appointmentRepository.save(appointment);
         

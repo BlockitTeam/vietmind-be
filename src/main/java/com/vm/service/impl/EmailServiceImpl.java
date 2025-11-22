@@ -15,7 +15,6 @@ import software.amazon.awssdk.services.ses.model.SendEmailRequest;
 import software.amazon.awssdk.services.ses.model.SendEmailResponse;
 import software.amazon.awssdk.services.ses.model.SendRawEmailRequest;
 import software.amazon.awssdk.services.ses.model.SendRawEmailResponse;
-import software.amazon.awssdk.services.ses.model.SesException;
 import com.vm.model.Appointment;
 import com.vm.model.User;
 import com.vm.service.EmailService;
@@ -138,7 +137,8 @@ public class EmailServiceImpl implements EmailService {
 
             // Image attachment part (header image)
             try {
-                ClassPathResource imageResource = new ClassPathResource("templates/email/images/header.jpg");
+                ClassPathResource imageResource = new ClassPathResource(
+                        "templates/email/images/header.jpg");
                 if (imageResource.exists()) {
                     MimeBodyPart imagePart = new MimeBodyPart();
                     InputStream imageInputStream = imageResource.getInputStream();
