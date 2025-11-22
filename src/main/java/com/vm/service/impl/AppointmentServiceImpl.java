@@ -69,16 +69,28 @@ public class AppointmentServiceImpl implements AppointmentService {
             conversationId = newConversation.getConversationId();
         } else {
             conversationId = conversation.getConversationId();
-            //conversation already have Appointment
-            Appointment originAppointment = appointmentRepository.findByConversationId(conversationId);
-            if (originAppointment != null)
-                throw new Exception("Error when create Appointment, this conversation " + conversationId + " already have Appointment");
+            // Kiểm tra appointment hiện tại của conversation - chỉ chặn nếu appointment chưa finish/cancel
+            Optional<Appointment> originAppointmentOpt = appointmentRepository.findTopByConversationIdOrderByAppointmentIdDesc(conversationId);
+            if (originAppointmentOpt.isPresent()) {
+                Appointment originAppointment = originAppointmentOpt.get();
+                // Chỉ chặn nếu appointment cũ chưa finish hoặc cancel (cho phép tạo appointment mới sau khi appointment cũ đã kết thúc)
+                if (originAppointment.getStatus() != AppointmentStatus.FINISH 
+                        && originAppointment.getStatus() != AppointmentStatus.CANCELLED) {
+                    throw new Exception("Error when create Appointment, this conversation " + conversationId + " already has an active appointment");
+                }
+            }
         }
         
-        // Validate: User chỉ được có 1 appointment trong tương lai
-        Optional<Appointment> existingFutureAppointment = getFutureAppointmentByUserId(appointment.getUserId());
-        if (existingFutureAppointment.isPresent()) {
-            throw new IllegalStateException("User already has a future appointment. Cannot create a new one.");
+        // Validate: Mỗi slot availability của bác sĩ chỉ được tối đa 2 appointment
+        long appointmentCountInSlot = appointmentRepository.countAppointmentsInSlot(
+                appointment.getDoctorId(),
+                appointment.getAppointmentDate(),
+                appointment.getStartTime(),
+                appointment.getEndTime(),
+                AppointmentStatus.CANCELLED
+        );
+        if (appointmentCountInSlot >= 2) {
+            throw new IllegalStateException("This time slot is already full. Maximum 2 appointments allowed per slot.");
         }
         
         appointment.setConversationId(conversationId);
@@ -314,6 +326,19 @@ public class AppointmentServiceImpl implements AppointmentService {
             if (!beAbleHaveFutureAppointment) {
                 throw new IllegalStateException("Cannot create a future appointment for this user.");
             }
+            
+            // Validate: Mỗi slot availability của bác sĩ chỉ được tối đa 2 appointment
+            long appointmentCountInSlot = appointmentRepository.countAppointmentsInSlot(
+                    appointment.getDoctorId(),
+                    appointment.getAppointmentDate(),
+                    appointment.getStartTime(),
+                    appointment.getEndTime(),
+                    AppointmentStatus.CANCELLED
+            );
+            if (appointmentCountInSlot >= 2) {
+                throw new IllegalStateException("This time slot is already full. Maximum 2 appointments allowed per slot.");
+            }
+            
             Appointment savedAppointment = appointmentRepository.save(appointment);
             
             // Schedule reminder jobs for the new appointment
@@ -329,18 +354,49 @@ public class AppointmentServiceImpl implements AppointmentService {
                 appointmentRepository.deleteByAppointmentId(appointment.getAppointmentId());
                 return appointment;
             }
+            
+            // Get existing appointment for update
+            Appointment existAppointment = appointmentRepository.findByAppointmentId(appointment.getAppointmentId())
+                    .orElseThrow(() -> new NoSuchElementException("Appointment with ID " + appointment.getAppointmentId() + " not found"));
+            
+            // Update status and time if provided
+            existAppointment.setStatus(appointment.getStatus());
+            if (appointment.getAppointmentDate() != null) {
+                existAppointment.setAppointmentDate(appointment.getAppointmentDate());
+            }
+            if (appointment.getStartTime() != null) {
+                existAppointment.setStartTime(appointment.getStartTime());
+            }
+            if (appointment.getEndTime() != null) {
+                existAppointment.setEndTime(appointment.getEndTime());
+            }
+            
+            // If appointment time is updated, validate slot limit (exclude current appointment from count)
+            if (appointment.getAppointmentDate() != null && appointment.getStartTime() != null && appointment.getEndTime() != null) {
+                long appointmentCountInSlot = appointmentRepository.countAppointmentsInSlotExcluding(
+                        existAppointment.getDoctorId(),
+                        existAppointment.getAppointmentDate(),
+                        existAppointment.getStartTime(),
+                        existAppointment.getEndTime(),
+                        AppointmentStatus.CANCELLED,
+                        appointment.getAppointmentId()
+                );
+                // Check if slot is full (excluding the current appointment being updated)
+                if (appointmentCountInSlot >= 2) {
+                    throw new IllegalStateException("This time slot is already full. Maximum 2 appointments allowed per slot.");
+                }
+            }
+            
+            Appointment updatedAppointment = appointmentRepository.save(existAppointment);
+            
+            // If appointment time is updated, reschedule reminder jobs
+            if (appointment.getAppointmentDate() != null && appointment.getStartTime() != null) {
+                LocalDateTime newAppointmentDateTime = LocalDateTime.of(updatedAppointment.getAppointmentDate(), updatedAppointment.getStartTime());
+                jobSchedulerService.updateJobsByEntity("appointment", appointment.getAppointmentId().toString(), newAppointmentDateTime);
+            }
+            
+            return updatedAppointment;
         }
-
-        //Update status
-        Appointment updatedAppointment = appointmentRepository.save(appointment);
-        
-        // If appointment time is updated, reschedule reminder jobs
-        if (appointment.getAppointmentDate() != null && appointment.getStartTime() != null) {
-            LocalDateTime newAppointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
-            jobSchedulerService.updateJobsByEntity("appointment", appointment.getAppointmentId().toString(), newAppointmentDateTime);
-        }
-        
-        return updatedAppointment;
     }
 
     @Override

@@ -18,7 +18,8 @@ import java.util.Optional;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
-    Appointment findByConversationId(Integer conversationId);
+    // Lấy appointment mới nhất theo conversationId (tránh NonUniqueResultException khi có nhiều appointment)
+    Optional<Appointment> findTopByConversationIdOrderByAppointmentIdDesc(Integer conversationId);
 
     Optional<Appointment> findByAppointmentId(Integer appointmentId);
 
@@ -103,5 +104,37 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
             String userId,
             LocalDate currentDate,
             LocalTime currentTime
+    );
+
+    // Đếm số appointment trong cùng slot (cùng doctorId, appointmentDate, startTime, endTime) và status != CANCELLED
+    @Query("SELECT COUNT(a) FROM Appointment a " +
+            "WHERE a.doctorId = :doctorId " +
+            "AND a.appointmentDate = :appointmentDate " +
+            "AND a.startTime = :startTime " +
+            "AND a.endTime = :endTime " +
+            "AND a.status != :cancelledStatus")
+    long countAppointmentsInSlot(
+            @Param("doctorId") String doctorId,
+            @Param("appointmentDate") LocalDate appointmentDate,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("cancelledStatus") AppointmentStatus cancelledStatus
+    );
+
+    // Đếm số appointment trong cùng slot nhưng loại trừ một appointmentId cụ thể (dùng khi update)
+    @Query("SELECT COUNT(a) FROM Appointment a " +
+            "WHERE a.doctorId = :doctorId " +
+            "AND a.appointmentDate = :appointmentDate " +
+            "AND a.startTime = :startTime " +
+            "AND a.endTime = :endTime " +
+            "AND a.status != :cancelledStatus " +
+            "AND a.appointmentId != :excludeAppointmentId")
+    long countAppointmentsInSlotExcluding(
+            @Param("doctorId") String doctorId,
+            @Param("appointmentDate") LocalDate appointmentDate,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("cancelledStatus") AppointmentStatus cancelledStatus,
+            @Param("excludeAppointmentId") Integer excludeAppointmentId
     );
 }
