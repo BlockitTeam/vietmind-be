@@ -70,7 +70,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         } else {
             conversationId = conversation.getConversationId();
             // Kiểm tra appointment hiện tại của conversation - chỉ chặn nếu appointment chưa finish/cancel
-            Optional<Appointment> originAppointmentOpt = appointmentRepository.findTopByConversationIdOrderByAppointmentIdDesc(conversationId);
+            Optional<Appointment> originAppointmentOpt = getFutureAppointmentByUserId(appointment.getUserId());
             if (originAppointmentOpt.isPresent()) {
                 Appointment originAppointment = originAppointmentOpt.get();
                 // Chỉ chặn nếu appointment cũ chưa finish hoặc cancel (cho phép tạo appointment mới sau khi appointment cũ đã kết thúc)
@@ -99,11 +99,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Schedule reminder jobs for the new appointment
         LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
         jobSchedulerService.scheduleAppointmentReminderJobs(savedAppointment.getAppointmentId().toString(), appointmentDateTime);
-        User userDetails = userService.getUserById(appointment.getUserId());
-
+//        User userDetails = userService.getUserById(appointment.getUserId());
         // Todo: Test fornow
 //        emailService.sendAppointmentReminderEmail(userDetails, appointment, 0);
-        pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, 0);
+//        pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, );
 
 
         User user = userRepo.findById(UUID.fromString(appointment.getDoctorId()))
