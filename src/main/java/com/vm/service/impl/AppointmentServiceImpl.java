@@ -99,10 +99,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Schedule reminder jobs for the new appointment
         LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getAppointmentDate(), appointment.getStartTime());
         jobSchedulerService.scheduleAppointmentReminderJobs(savedAppointment.getAppointmentId().toString(), appointmentDateTime);
-//        User userDetails = userService.getUserById(appointment.getUserId());
+        User userDetails = userService.getUserById(appointment.getUserId());
         // Todo: Test fornow
 //        emailService.sendAppointmentReminderEmail(userDetails, appointment, 0);
-//        pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, );
+        pushNotificationService.sendAppointmentReminderNotification(userDetails, appointment, 0);
 
 
         User user = userRepo.findById(UUID.fromString(appointment.getDoctorId()))
