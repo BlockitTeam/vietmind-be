@@ -76,7 +76,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 // Chỉ chặn nếu appointment cũ chưa finish hoặc cancel (cho phép tạo appointment mới sau khi appointment cũ đã kết thúc)
                 if (originAppointment.getStatus() != AppointmentStatus.FINISH 
                         && originAppointment.getStatus() != AppointmentStatus.CANCELLED) {
-                    throw new Exception("Error when create Appointment, this conversation " + conversationId + " already has an active appointment");
+                    throw new Exception("User already has a future appointment. Cannot create a new one.");
                 }
             }
         }
